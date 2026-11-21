@@ -1,0 +1,15 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "decoder",
+    main = "decoder.zig",
+    import_name = "zml_lib/taef1",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime"],
+)
+
+zig_binary(
+    name = "taef1_probe",
+    main = "probe.zig",
+    deps = [":decoder", "//runtime:runtime"],
+)

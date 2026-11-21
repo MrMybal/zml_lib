@@ -1,0 +1,9 @@
+load("@rules_zig//zig:defs.bzl", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    import_name = "zml_lib/qwen_decoder",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)

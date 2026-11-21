@@ -1,0 +1,13 @@
+EXPORTS
+    zml_lib_add
+    zml_lib_infer
+    zml_lib_infer_mnist
+    zml_lib_infer_smoke
+    zml_lib_last_error
+    zml_lib_load_mnist
+    zml_lib_load_model
+    zml_lib_load_smoke
+    zml_lib_session_close
+    zml_lib_session_info
+    zml_lib_session_open
+    zml_lib_unload_model

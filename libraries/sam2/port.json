@@ -1,0 +1,14 @@
+{
+  "bibliotheque": "sam2",
+  "etat": "valide_windows_cpu",
+  "dependances": [
+    "sam"
+  ],
+  "checkpoints_comfyui": [
+    "sam2/sam2_hiera_base_plus.safetensors"
+  ],
+  "interface": "Image ou suite d'images et prompts. Sorties masques, scores et mémoire persistante pour la vidéo.",
+  "validation": "Comparer le profil local SAM 2.0 Hiera base+ sur une image puis sur une séquence de plusieurs frames.",
+  "reference": "https://github.com/facebookresearch/sam2",
+  "resultats": "libraries/sam2/README.md"
+}

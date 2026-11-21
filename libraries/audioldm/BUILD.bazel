@@ -1,0 +1,22 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "decoder",
+    main = "decoder.zig",
+    srcs = ["ddim.zig", "unet.zig"],
+    import_name = "zml_lib/audioldm",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime"],
+)
+
+zig_binary(
+    name = "audio_decode_probe",
+    main = "probe.zig",
+    deps = [":decoder", "//libraries/hifigan:model", "//runtime:runtime"],
+)
+
+zig_binary(
+    name = "audio_generate_probe",
+    main = "generate.zig",
+    deps = [":decoder", "//libraries/hifigan:model", "//libraries/laion_clap:text", "//runtime:runtime"],
+)

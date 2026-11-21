@@ -1,0 +1,12 @@
+{
+  "bibliotheque": "sam",
+  "etat": "valide_windows_cpu",
+  "dependances": [],
+  "checkpoints_comfyui": [
+    "sams/sam_vit_b_01ec64.pth"
+  ],
+  "interface": "Image et prompts points/boîtes. Sorties masques et scores, avec réutilisation de l'embedding image.",
+  "validation": "Comparer embedding et logits des masques sur image non carrée. Répéter avec deux jeux de prompts en gardant l'embedding.",
+  "reference": "https://github.com/facebookresearch/segment-anything",
+  "resultats": "libraries/sam/README.md"
+}

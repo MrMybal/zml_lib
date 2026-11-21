@@ -1,0 +1,9 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary")
+load("//libraries/llm_runtime:build_defs.bzl", "tokenizer_copts")
+
+zig_binary(
+    name = "llama_generate",
+    main = "main.zig",
+    copts = tokenizer_copts(),
+    deps = ["//libraries/llm_runtime:runner"],
+)

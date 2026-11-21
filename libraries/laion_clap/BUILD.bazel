@@ -1,0 +1,15 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "text",
+    main = "text.zig",
+    import_name = "zml_lib/clap_text",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime"],
+)
+
+zig_binary(
+    name = "clap_text_probe",
+    main = "probe.zig",
+    deps = [":text", "//runtime:runtime"],
+)

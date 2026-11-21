@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    srcs = ["head.zig", "weights.zig"],
+    import_name = "zml_lib/depth_anything_v2",
+    visibility = ["//visibility:public"],
+    deps = ["//libraries/dinov2:model", "//runtime:runtime"],
+)
+
+zig_binary(
+    name = "depth_probe",
+    main = "probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)

@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/zml/zml.git",
+  "revision": "f430c3530fbc6d99f734b641eb8f3fd699868843",
+  "windows_revision": "0bb81d1957fb6438faddd1751566ad73eed97914",
+  "zig": "0.17.0",
+  "bazel": "9.3.0"
+}

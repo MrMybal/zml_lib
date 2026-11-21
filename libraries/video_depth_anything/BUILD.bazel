@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    srcs = ["motion.zig"],
+    import_name = "zml_lib/video_depth_anything",
+    visibility = ["//visibility:public"],
+    deps = ["//libraries/depth_anything_v2:model", "//libraries/dinov2:model", "//runtime:runtime"],
+)
+
+zig_binary(
+    name = "video_depth_probe",
+    main = "probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)

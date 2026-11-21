@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    srcs = ["encoder.zig", "memory.zig", "weights.zig"],
+    import_name = "zml_lib/sam2",
+    visibility = ["//visibility:public"],
+    deps = ["//libraries/sam:heads", "//runtime:runtime"],
+)
+
+zig_binary(
+    name = "sam2_probe",
+    main = "probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)

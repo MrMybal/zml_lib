@@ -1,0 +1,13 @@
+{
+  "bibliotheque": "retinaface",
+  "etat": "valide_windows_cpu",
+  "dependances": [],
+  "checkpoints_comfyui": [
+    "facedetection/detection_Resnet50_Final.pth"
+  ],
+  "interface": "Entrée image RGB puis prétraitement de FaceXLib. Sorties boîtes, scores et cinq repères par visage.",
+  "validation": "Retirer module. avant le chargement. Convertir les paramètres BatchNorm en conservant moyennes et variances d'inférence. Comparer ancres, boîtes et cinq repères avant et après NMS.",
+  "reference": "${COMFYUI_ROOT}/custom_nodes/facerestore_cf/facelib/detection",
+  "tenseurs_fp32_inference": 383,
+  "resultats": "libraries/codeformer/README.md"
+}

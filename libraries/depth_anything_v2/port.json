@@ -1,0 +1,17 @@
+{
+  "bibliotheque": "depth_anything_v2",
+  "etat": "valide_windows_cpu",
+  "dependances": [
+    "dinov2"
+  ],
+  "checkpoints_comfyui": [
+    "depthanything/depth_anything_v2_vitl_fp16.safetensors"
+  ],
+  "interface": "RGB FP32 avec dimensions de patch alignées pour DINOv2. Tête DPT avec sortie de profondeur relative FP32.",
+  "tenseurs": 407,
+  "sha256_checkpoint_local": "f075a9099f94bae54a5bfe21a1423346429309bae40abb85b9935985b1f35a09",
+  "licence_code_reference": "Apache-2.0",
+  "licence_modele": "CC-BY-NC-4.0",
+  "validation": "Activations et profondeur FP32 comparées à PyTorch sur cpu:0 avec les mêmes poids FP16. Deux inférences par modèle chargé, puis rechargement et prédiction. Écart maximal de profondeur de 0.00011444091796875.",
+  "reference": "https://github.com/DepthAnything/Depth-Anything-V2"
+}

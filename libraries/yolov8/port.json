@@ -1,0 +1,14 @@
+{
+  "bibliotheque": "yolov8",
+  "etat": "valide_windows_cpu",
+  "dependances": [],
+  "checkpoints_comfyui": [
+    "ultralytics/bbox/face_yolov8m.pt",
+    "ultralytics/bbox/hand_yolov8s.pt",
+    "ultralytics/segm/person_yolov8m-seg.pt"
+  ],
+  "interface": "Image avec letterbox. Sortie détections puis masques si la variante comporte une tête Segment.",
+  "validation": "Exporter avec la version Ultralytics de référence. Comparer prédictions brutes, boîtes après NMS et masques dans la résolution source.",
+  "reference": "https://docs.ultralytics.com/models/yolov8/",
+  "resultats": "libraries/yolov8/README.md"
+}

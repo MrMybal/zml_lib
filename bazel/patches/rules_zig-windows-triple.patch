@@ -1,0 +1,12 @@
+diff --git a/zig/private/common/translate_c.bzl b/zig/private/common/translate_c.bzl
+--- a/zig/private/common/translate_c.bzl
++++ b/zig/private/common/translate_c.bzl
+@@ -39,6 +39,8 @@ _TRANSLATE_C_2_MIN_ZIG_VERSION = "0.17.0"
+ _TRANSLATED_ARGS = {
+     "-internal-isystem": "-isystem",
++    "x86_64-w64-windows-gnu": "x86_64-windows-gnu",
++    "--target=x86_64-w64-windows-gnu": "--target=x86_64-windows-gnu",
+ }
+
+ _FILTERED_ARGS = [
+     "-Xclang",

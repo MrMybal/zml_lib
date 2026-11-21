@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    srcs = ["src/graph.zig"],
+    import_name = "zml_lib/realplksr",
+    main = "src/model.zig",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "realplksr_probe",
+    main = "src/probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)

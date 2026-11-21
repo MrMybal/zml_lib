@@ -1,0 +1,49 @@
+{
+  "reference": {
+    "Real-ESRGAN": {
+      "repository": "https://github.com/xinntao/Real-ESRGAN",
+      "revision": "fa4c8a03ae3dbc9ea6ed471a6ab5da94ac15c2ea",
+      "license": "BSD-3-Clause",
+      "license_url": "https://github.com/xinntao/Real-ESRGAN/blob/fa4c8a03ae3dbc9ea6ed471a6ab5da94ac15c2ea/LICENSE"
+    },
+    "BasicSR": {
+      "repository": "https://github.com/XPixelGroup/BasicSR",
+      "revision": "8d56e3a045f9fb3e1d8872f92ee4a4f07f886b0a",
+      "license": "Apache-2.0",
+      "license_url": "https://github.com/XPixelGroup/BasicSR/blob/8d56e3a045f9fb3e1d8872f92ee4a4f07f886b0a/LICENSE.txt"
+    }
+  },
+  "models": {
+    "RealESRGAN_x2plus": {
+      "blocks": 23,
+      "tensor_count": 702,
+      "scale": 2,
+      "checkpoint": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth"
+    },
+    "RealESRGAN_x4plus": {
+      "blocks": 23,
+      "tensor_count": 702,
+      "checkpoint": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+    },
+    "RealESRGAN_x4plus_anime_6B": {
+      "blocks": 6,
+      "tensor_count": 192,
+      "checkpoint": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth"
+    },
+    "4x_RealisticRescaler_100000_G": {
+      "blocks": 23,
+      "tensor_count": 702,
+      "runtime_model": "RealESRGAN_x4plus",
+      "checkpoint": "https://openmodeldb.info/models/4x-RealisticRescaler",
+      "author": "Mutin Choler"
+    },
+    "4x_NMKD-Siax_200k": {
+      "blocks": 23,
+      "tensor_count": 702,
+      "runtime_model": "RealESRGAN_x4plus",
+      "layout": "esrgan_sequential",
+      "checkpoint": "https://openmodeldb.info/models/4x-NMKD-Siax-CX",
+      "author": "Nmkd"
+    }
+  }
+}

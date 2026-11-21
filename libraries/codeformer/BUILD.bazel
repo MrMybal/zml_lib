@@ -1,0 +1,29 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_zig//zig:defs.bzl", "zig_library", "zig_shared_library")
+
+zig_library(
+    name = "model",
+    srcs = ["graph.zig", "weights.zig"],
+    import_name = "zml_lib/codeformer",
+    main = "model.zig",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime"],
+)
+
+cc_library(
+    name = "face_exports",
+    additional_linker_inputs = select({
+        "@platforms//os:windows": ["zml_faces.def"],
+        "//conditions:default": [],
+    }),
+    linkopts = select({
+        "@platforms//os:windows": ["$(location zml_faces.def)"],
+        "//conditions:default": [],
+    }),
+)
+
+zig_shared_library(
+    name = "zml_faces",
+    main = "api.zig",
+    deps = [":face_exports", ":model", "//libraries/retinaface:model", "//libraries/parsenet:model", "//runtime:runtime"],
+)

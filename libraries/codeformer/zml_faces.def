@@ -1,0 +1,8 @@
+EXPORTS
+    zml_faces_open
+    zml_faces_close
+    zml_faces_load
+    zml_faces_infer
+    zml_faces_decode
+    zml_faces_info
+    zml_faces_last_error

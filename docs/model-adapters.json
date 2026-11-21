@@ -1,0 +1,3993 @@
+{
+  "schema_version": 1,
+  "objet": "Inventaire des architectures à intégrer à ZML et des dépendances des applications locales.",
+  "racines": {
+    "ComfyUI": "${COMFYUI_ROOT}/models",
+    "_CyTools": "${CYTOOLS_ROOT}"
+  },
+  "perimetre": {
+    "projets_cytools": [
+      "CyTools_AIChat",
+      "CyTools_AudioLibrary",
+      "CyTools_AudioStudio",
+      "CyTools_ComfyFlow",
+      "CyTools_ImageStudio",
+      "CyTools_MeshStudio",
+      "CyTools_MiniMaxH3",
+      "CyTools_PersonaRP",
+      "CyTools_PersonaRP_Colab",
+      "CyTools_Storyboard",
+      "CyTools_Subtitle",
+      "CyTools_VideoStudio",
+      "CyTools_VideoToGaussian",
+      "CyTools_VideoToStereo3D",
+      "CyToolsManager"
+    ],
+    "sous_dossiers_de_poids_cytools": "<projet>/data/models",
+    "sous_dossiers_runtime_selectionnes": {
+      "CyTools_VideoStudio": [
+        "runtime/restoration-validation",
+        "runtime/engines/stereo/data/models"
+      ],
+      "CyTools_Subtitle": [
+        "runtime/nemotron-research/downloads"
+      ],
+      "CyTools_VideoToGaussian": [
+        "runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints",
+        "runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model",
+        "runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/network/hmr2/configs"
+      ],
+      "CyTools_MeshStudio": [
+        "runtime/sources/SPAR3D/load/tets"
+      ]
+    },
+    "lecture": "ComfyUI, clés et formes des checkpoints, en-têtes SafeTensors et structure des .pt Ultralytics. CyTools, fichiers de poids identifiés, catalogues, code de chargement, configurations et workflows. Lecture des en-têtes GGUF et SafeTensors des fichiers CyTools correspondants.",
+    "fichiers_ignores": "Fichiers de sortie, tests de dépendances, environnements Python, sauvegardes, copies de publication, entrées génériques de registre et caches globaux hors racines.",
+    "statuts": {
+      "port_existant_a_etendre": "Port source présent dans zml_lib.",
+      "base_zml_a_integrer": "Un exemple existe dans zml_win. Formats, variantes et ABI restent à intégrer.",
+      "a_porter": "Architecture ou composant identifié dans les sources inspectées.",
+      "architecture_a_confirmer": "Le bundle ou le checkpoint exact doit être analysé avant de fixer le graphe.",
+      "integration_a_specifier": "Le catalogue déclare le modèle. Le contrat d'inférence applicatif reste à fixer.",
+      "porte": "Port source livré. Voir avancement pour les backends vérifiés.",
+      "source_implemente": "Graphe ou lanceur source livré, validation native ou poids à vérifier.",
+      "valide_windows_cpu": "Profil testé sous Windows x64 sur CPU. Voir avancement pour la variante."
+    },
+    "validation": "Les résultats des portages exécutés figurent dans avancement. L'inventaire des autres modèles repose sur les fichiers et les sources."
+  },
+  "totaux": {
+    "adaptateurs": 74,
+    "adaptateurs_par_domaine": {
+      "Image et vision": 19,
+      "Génération d’images et de vidéos": 11,
+      "Texte et multimodal": 10,
+      "Audio, voix et parole": 16,
+      "3D, mouvement et splats": 18
+    },
+    "adaptateurs_par_statut": {
+      "porte": 8,
+      "valide_windows_cpu": 8,
+      "port_existant_a_etendre": 3,
+      "a_porter": 48,
+      "architecture_a_confirmer": 4,
+      "source_implemente": 2,
+      "integration_a_specifier": 1
+    },
+    "comfyui_fichiers_de_poids": 13,
+    "comfyui_familles_de_checkpoints": 9,
+    "cytools_fichiers_de_poids_et_auxiliaires": 52,
+    "cytools_catalogues": 19
+  },
+  "ordre_portages": {
+    "principe": "L'ordre est garanti sur les dépendances entre bibliothèques. Le premier lot couvre les poids locaux de ComfyUI et l'encodeur DINOv2 embarqué dans Depth Anything V2.",
+    "lots": [
+      {
+        "nom": "ComfyUI",
+        "bibliotheques": [
+          "realesrgan",
+          "realplksr",
+          "retinaface",
+          "parsenet",
+          "codeformer",
+          "yolov8",
+          "sam",
+          "sam2",
+          "dinov2",
+          "depth_anything_v2"
+        ]
+      },
+      {
+        "nom": "Encodeurs et modèles partagés de CyTools",
+        "bibliotheques": [
+          "srvggnet",
+          "swinir",
+          "clip",
+          "t5",
+          "dinov3",
+          "dino_v1",
+          "birefnet",
+          "u2net",
+          "taesd",
+          "llama",
+          "qwen2",
+          "qwen3",
+          "qwen35",
+          "laion_clap",
+          "m2d_clap",
+          "vitpose",
+          "hmr2"
+        ],
+        "extensions": [
+          {
+            "bibliotheque": "realesrgan",
+            "profil": "RealESRGAN_x2plus"
+          }
+        ]
+      },
+      {
+        "nom": "Génération, texte et multimodal",
+        "bibliotheques": [
+          "stable_diffusion",
+          "flux1",
+          "qwen25_vl",
+          "internvl3",
+          "gemma4",
+          "gpt_oss",
+          "qwen3_vl",
+          "qwen_image",
+          "wan",
+          "video_depth_anything",
+          "stereo_crafter",
+          "stereo_pilot",
+          "minimax_h3"
+        ]
+      },
+      {
+        "nom": "Audio, parole et voix",
+        "bibliotheques": [
+          "audioldm",
+          "acestep",
+          "fish_speech",
+          "qwen3_tts",
+          "piper",
+          "xtts",
+          "f5_tts",
+          "whisper",
+          "parakeet_tdt",
+          "pyannote",
+          "nemotron_diarization",
+          "omni_embed_audio"
+        ]
+      },
+      {
+        "nom": "3D, mouvement et reconstruction",
+        "bibliotheques": [
+          "alpha_clip",
+          "perspective_fields",
+          "zero123plus",
+          "syncdreamer",
+          "wonder3d",
+          "stablenormal",
+          "trellis",
+          "trellis2",
+          "hi3dgen",
+          "triposr",
+          "unirig",
+          "wham",
+          "gvhmr",
+          "four_d_anyone",
+          "sharp",
+          "t4gs"
+        ]
+      },
+      {
+        "nom": "Bundles et contrats à confirmer",
+        "bibliotheques": [
+          "transparent_background",
+          "spar3d",
+          "localmesh_multivue",
+          "darkidol_voice",
+          "phonon",
+          "audio_flamingo"
+        ]
+      }
+    ]
+  },
+  "adaptateurs": [
+    {
+      "id": "realesrgan",
+      "domaine": "Image et vision",
+      "dossier": "libraries/realesrgan",
+      "statut": "porte",
+      "modeles": [
+        "RealESRGAN_x4plus",
+        "RealESRGAN_x4plus_anime_6B",
+        "RealESRGAN_x2plus",
+        "4x_RealisticRescaler_100000_G",
+        "4x_NMKD-Siax_200k"
+      ],
+      "clients": [
+        "ComfyUI",
+        "CyTools_ImageStudio",
+        "CyTools_VideoToStereo3D"
+      ],
+      "moteur_actuel": "PyTorch, BasicSR, Spandrel",
+      "travail": "Partager RRDBNet avec des profils ×4/23 blocs, ×4/6 blocs et ×2/23 blocs. Ajouter le pixel-unshuffle du ×2 et la conversion des clés ESRGAN historiques. Les trois profils ×4 à 23 blocs présents dans ComfyUI concordent sur leurs 702 clés et formes après remappage.",
+      "reference": "https://github.com/xinntao/Real-ESRGAN/blob/master/docs/model_zoo.md",
+      "fichiers_locaux": 4,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json",
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 4,
+      "avancement": {
+        "comfyui": "Trois checkpoints RRDBNet ×4 convertis et validés sous Windows x64 sur CPU via CLI et ABI C contre Spandrel.",
+        "erreur_absolue_max_fp32": 5.42402e-06,
+        "png_identiques": true,
+        "profils_a_etendre": [],
+        "documentation": "libraries/realesrgan/README.md",
+        "etat": "x2plus validé sur cpu:0 via le CLI, l’ABI C et l’exemple C++. Sortie FP32 à 1.50502e-6 de Spandrel, PNG identique.",
+        "profils_a_valider": [
+          "RealESRGAN_x4plus_anime_6B avec les poids officiels"
+        ]
+      }
+    },
+    {
+      "id": "srvggnet",
+      "domaine": "Image et vision",
+      "dossier": "libraries/srvggnet",
+      "statut": "valide_windows_cpu",
+      "modeles": [
+        "realesr-general-x4v3"
+      ],
+      "clients": [
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "Spandrel, PyTorch",
+      "travail": "Porter SRVGGNetCompact avec PReLU, PixelShuffle et le résiduel redimensionné, avec prise en charge du checkpoint général x4v3.",
+      "reference": "https://github.com/xinntao/Real-ESRGAN/blob/master/docs/model_zoo.md",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "CyTools General x4v3, deux tailles et deux inférences par taille sur cpu:0. Erreur maximale 3.21865082e-6.",
+        "documentation": "libraries/srvggnet/README.md"
+      }
+    },
+    {
+      "id": "swinir",
+      "domaine": "Image et vision",
+      "dossier": "libraries/swinir",
+      "statut": "port_existant_a_etendre",
+      "modeles": [
+        "SwinIR-M ColorCAR JPEG10 et JPEG20",
+        "SwinIR-M ColorDN noise25"
+      ],
+      "clients": [
+        "CyTools_ImageStudio",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "Spandrel, PyTorch",
+      "travail": "Implémenter fenêtres déplacées, biais relatif, padding aux multiples de fenêtre et reconstruction couleur aux profils du checkpoint.",
+      "reference": "https://github.com/JingyunLiang/SwinIR",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "JPEG10 validé sur cpu:0 avec les poids CyTools. Erreur maximale 1.31130219e-6. JPEG20 et ColorDN restent à couvrir.",
+        "documentation": "libraries/swinir/README.md"
+      }
+    },
+    {
+      "id": "realplksr",
+      "domaine": "Image et vision",
+      "dossier": "libraries/realplksr",
+      "statut": "porte",
+      "modeles": [
+        "4xNomos2_realplksr_dysample"
+      ],
+      "clients": [
+        "ComfyUI",
+        "CyTools_ComfyFlow"
+      ],
+      "moteur_actuel": "Spandrel, PyTorch",
+      "travail": "Porter les 28 blocs à convolution partielle large 17×17, l’attention élément par élément et DySample avec offsets et échantillonnage bilinéaire aux bords.",
+      "reference": "https://huggingface.co/Phips/4xNomos2_realplksr_dysample",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "comfyui": "Graphe Zig, chargement SafeTensors FP32 et probe sous Windows x64.",
+        "images_testees": [
+          "13x9",
+          "1x1"
+        ],
+        "erreur_absolue_max_fp32": {
+          "cpu": 1.132488e-06,
+          "rocm": 1.400709e-06,
+          "vulkan": 1.609325e-06
+        },
+        "cuda": "CUDA_ERROR_INVALID_CONTEXT lors du chargement du code sur la RTX 3090.",
+        "documentation": "libraries/realplksr/README.md"
+      }
+    },
+    {
+      "id": "retinaface",
+      "domaine": "Image et vision",
+      "dossier": "libraries/retinaface",
+      "statut": "porte",
+      "modeles": [
+        "RetinaFace ResNet50 Final"
+      ],
+      "clients": [
+        "ComfyUI"
+      ],
+      "moteur_actuel": "FaceXLib, PyTorch",
+      "travail": "Porter ResNet50, FPN et SSH. Reproduire le décodage des ancres, les cinq points du visage et NMS, puis normaliser le préfixe module.",
+      "reference": "https://github.com/xinntao/facexlib",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "comfyui": "Détection ResNet-50/FPN/SSH, ancres et NMS validées sur le CPU Windows.",
+        "tenseurs_fp32_inference": 383,
+        "backend_valide": "cpu",
+        "documentation": "libraries/retinaface/README.md"
+      }
+    },
+    {
+      "id": "parsenet",
+      "domaine": "Image et vision",
+      "dossier": "libraries/parsenet",
+      "statut": "porte",
+      "modeles": [
+        "ParseNet face parsing"
+      ],
+      "clients": [
+        "ComfyUI"
+      ],
+      "moteur_actuel": "FaceXLib, PyTorch",
+      "travail": "Produire le masque visage à partir des 19 classes. Préserver le profil 512×512 et le traitement alpha de la référence.",
+      "reference": "https://github.com/xinntao/facexlib",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "comfyui": "Les 19 logits et la sortie RGB sont validés sur le CPU Windows.",
+        "tenseurs_fp32_inference": 202,
+        "backend_valide": "cpu",
+        "documentation": "libraries/parsenet/README.md"
+      }
+    },
+    {
+      "id": "codeformer",
+      "domaine": "Image et vision",
+      "dossier": "libraries/codeformer",
+      "statut": "porte",
+      "modeles": [
+        "CodeFormer"
+      ],
+      "clients": [
+        "ComfyUI"
+      ],
+      "moteur_actuel": "FaceXLib, BasicSR, PyTorch",
+      "travail": "Porter encodeur, Transformer des latents, codebook 1024×256, décodeur et paramètre de fidélité w. Composer le recadrage affine, le masque et le collage dans le pipeline frontal.",
+      "dependances": [
+        "retinaface",
+        "parsenet"
+      ],
+      "reference": "https://github.com/sczhou/CodeFormer",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "comfyui": "Restauration à w=0 et w=0,5, indices du codebook et chaîne complète validés sur le CPU Windows.",
+        "tenseurs_fp32_inference": 515,
+        "backend_valide": "cpu",
+        "documentation": "libraries/codeformer/README.md",
+        "ecart_pixels_max": 2
+      }
+    },
+    {
+      "id": "sam",
+      "domaine": "Image et vision",
+      "dossier": "libraries/sam",
+      "statut": "porte",
+      "modeles": [
+        "SAM ViT-B"
+      ],
+      "clients": [
+        "ComfyUI"
+      ],
+      "moteur_actuel": "Segment Anything, PyTorch",
+      "travail": "Porter encodeur ViT-B/16, prompts points et boîtes et décodeur de masques. Réutiliser l’embedding de l’image entre prompts.",
+      "reference": "https://github.com/facebookresearch/segment-anything",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "backend_valide": "cpu",
+        "plateforme": "Windows x64",
+        "mesures_comfyui": {
+          "iou_min_masques": 0.999969632185025,
+          "ecart_max_embedding": 1.2293457984924316e-06
+        },
+        "documentation": "libraries/sam/README.md"
+      }
+    },
+    {
+      "id": "sam2",
+      "domaine": "Image et vision",
+      "dossier": "libraries/sam2",
+      "statut": "porte",
+      "modeles": [
+        "SAM 2 Hiera base+",
+        "SAM 2.1 Hiera base+ et large"
+      ],
+      "clients": [
+        "ComfyUI",
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "Segment Anything 2, PyTorch",
+      "travail": "Porter Hiera, FPN, prompts et décodeur, puis encodeur et attention de mémoire vidéo. Vérifier les profils 2.0 et 2.1.",
+      "reference": "https://github.com/facebookresearch/sam2",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1,
+      "dependances": [
+        "sam"
+      ],
+      "avancement": {
+        "backend_valide": "cpu",
+        "plateforme": "Windows x64",
+        "mesures_comfyui": {
+          "iou_min_masques_image": 1.0,
+          "images_video": 3,
+          "iou_min_masques_video": 1.0
+        },
+        "documentation": "libraries/sam2/README.md"
+      }
+    },
+    {
+      "id": "dinov2",
+      "domaine": "Image et vision",
+      "dossier": "libraries/dinov2",
+      "statut": "valide_windows_cpu",
+      "profil_porte": "ViT-L/14 sans registres, embarqué dans Depth Anything V2 Large",
+      "documentation": "libraries/dinov2/README.md",
+      "modeles": [
+        "DINOv2 ViT-S/B/L-14",
+        "DINOv2-L avec registres"
+      ],
+      "clients": [
+        "ComfyUI",
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, Transformers",
+      "travail": "Partager le backbone et ses sorties intermédiaires, l’interpolation de positions et la gestion des tokens de registre.",
+      "reference": "https://github.com/facebookresearch/dinov2",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "depth_anything_v2",
+      "domaine": "Image et vision",
+      "dossier": "libraries/depth_anything_v2",
+      "statut": "valide_windows_cpu",
+      "profil_porte": "Large, profondeur relative, poids FP16 chargés en FP32",
+      "documentation": "libraries/depth_anything_v2/README.md",
+      "modeles": [
+        "Depth Anything V2 Small et Large FP16"
+      ],
+      "clients": [
+        "ComfyUI",
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "Depth Anything V2, PyTorch",
+      "travail": "Porter la tête DPT. Garder les sorties de profondeur relative et le prétraitement de résolution alignée sur la taille de patch.",
+      "dependances": [
+        "dinov2"
+      ],
+      "reference": "https://github.com/DepthAnything/Depth-Anything-V2",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1
+    },
+    {
+      "id": "yolov8",
+      "domaine": "Image et vision",
+      "dossier": "libraries/yolov8",
+      "statut": "porte",
+      "modeles": [
+        "YOLOv8m visage",
+        "YOLOv8s main",
+        "YOLOv8m-seg personne",
+        "YOLOv8x"
+      ],
+      "clients": [
+        "ComfyUI",
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "Ultralytics, PyTorch",
+      "travail": "Partager C2f, SPPF, FPN/PAN et DFL. Porter Detect et Segment avec prototypes, letterbox, NMS et recadrage. Extraire hors ligne les modules et poids fiables ou convertir via ONNX.",
+      "reference": "https://docs.ultralytics.com/models/yolov8/",
+      "fichiers_locaux": 4,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 4,
+      "avancement": {
+        "backend_valide": "cpu",
+        "plateforme": "Windows x64",
+        "mesures_comfyui": {
+          "detections": {
+            "face": 2,
+            "hand": 1,
+            "person": 4
+          },
+          "ecart_max_xywh": 0.001373291015625,
+          "iou_min_masques_personne": 1.0
+        },
+        "documentation": "libraries/yolov8/README.md"
+      }
+    },
+    {
+      "id": "birefnet",
+      "domaine": "Image et vision",
+      "dossier": "libraries/birefnet",
+      "statut": "a_porter",
+      "modeles": [
+        "BiRefNet HR",
+        "BiRefNet utilisé par 4DAnyone"
+      ],
+      "clients": [
+        "CyTools_MeshStudio",
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "Transformers, PyTorch",
+      "travail": "Porter backbone et décodeur de masque haute résolution, avec profils et seuils validés par les deux applications.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json",
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "dinov3",
+      "domaine": "Image et vision",
+      "dossier": "libraries/dinov3",
+      "statut": "a_porter",
+      "modeles": [
+        "DINOv3 ViT-L/16"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "Transformers ou PyTorch, TRELLIS.2",
+      "travail": "Porter l’encodeur DINOv3 avec sa configuration de position et ses tokens spéciaux.",
+      "reference": "https://github.com/facebookresearch/dinov3",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "dino_v1",
+      "domaine": "Image et vision",
+      "dossier": "libraries/dino_v1",
+      "statut": "a_porter",
+      "modeles": [
+        "DINO ViT-B/16"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "TripoSR, PyTorch",
+      "travail": "Porter le profil d’encodeur image DINO v1 utilisé par TripoSR, en partageant uniquement les opérateurs ViT compatibles.",
+      "reference": "https://github.com/facebookresearch/dino",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "alpha_clip",
+      "domaine": "Image et vision",
+      "dossier": "libraries/alpha_clip",
+      "statut": "a_porter",
+      "modeles": [
+        "Alpha-CLIP"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "SPAR3D, PyTorch",
+      "travail": "Porter l’encodeur image avec canal de masque additionnel et vérifier le profil concret du bundle SPAR3D.",
+      "dependances": [
+        "clip"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "u2net",
+      "domaine": "Image et vision",
+      "dossier": "libraries/u2net",
+      "statut": "a_porter",
+      "modeles": [
+        "U2Net"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "TripoSR, rembg",
+      "travail": "Porter le modèle de détourage requis par TripoSR, après vérification du variant et du format ONNX de son bundle.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "transparent_background",
+      "domaine": "Image et vision",
+      "dossier": "libraries/transparent_background",
+      "statut": "architecture_a_confirmer",
+      "modeles": [
+        "Modèle auxiliaire transparent-background du bundle SPAR3D"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "transparent-background, PyTorch",
+      "travail": "Relever le modèle de détourage et les poids inclus dans le bundle SPAR3D avant de fixer le graphe.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "perspective_fields",
+      "domaine": "Image et vision",
+      "dossier": "libraries/perspective_fields",
+      "statut": "a_porter",
+      "modeles": [
+        "PerspectiveFields ParamNet 360cities"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PerspectiveFields, PyTorch",
+      "travail": "Porter l’estimation de champ de perspective et le décodage des paramètres caméra.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "clip",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/clip",
+      "statut": "port_existant_a_etendre",
+      "modeles": [
+        "CLIP-L / CLIP texte Stable Diffusion",
+        "CLIP Vision H et encodeur SVD"
+      ],
+      "clients": [
+        "CyTools_ImageStudio",
+        "CyTools_ComfyFlow",
+        "CyTools_VideoToStereo3D",
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "ComfyUI, Transformers, Diffusers",
+      "travail": "Partager prétraitement, Transformer et projections sur les profils CLIP texte et vision. Vérifier vocabulaire, normalisation et tailles d’embedding par modèle.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json",
+        "CyTools_MeshStudio/app/models/catalog.json",
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "Encodeur CLIP-L texte comparé à PyTorch sur cpu:0 avec des poids synthétiques. Encodeur vision à porter.",
+        "documentation": "libraries/clip/README.md"
+      }
+    },
+    {
+      "id": "t5",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/t5",
+      "statut": "a_porter",
+      "modeles": [
+        "T5-XXL de FLUX.1",
+        "UMT5-XXL de Wan"
+      ],
+      "clients": [
+        "CyTools_ImageStudio",
+        "CyTools_ComfyFlow",
+        "CyTools_VideoToStereo3D"
+      ],
+      "moteur_actuel": "ComfyUI, Transformers",
+      "travail": "Porter l’encodeur avec positions relatives T5, SentencePiece, profils T5/UMT5, et le chargement FP8/GGUF rencontré dans les workflows.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json",
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "stable_diffusion",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/stable_diffusion",
+      "statut": "a_porter",
+      "modeles": [
+        "Stable Diffusion 1.5",
+        "SD 1.5 Inpainting",
+        "profil Pony/SDXL à confirmer"
+      ],
+      "clients": [
+        "CyTools_ImageStudio",
+        "CyTools_ComfyFlow",
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "ComfyUI, Diffusers",
+      "travail": "Porter U-Net, VAE, conditioning, sampling et inpainting. Confirmer Pony par métadonnées de poids puis traiter SDXL comme profil de pipeline distinct avec double encodeur. Les YAML SD1/SD2 de ComfyUI sont des configurations.",
+      "dependances": [
+        "clip"
+      ],
+      "reference": "https://huggingface.co/cyberdelia/CyberRealisticPony",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json",
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "flux1",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/flux1",
+      "statut": "a_porter",
+      "modeles": [
+        "FLUX.1 Schnell FP8",
+        "LoRA FLUX.1"
+      ],
+      "clients": [
+        "CyTools_ImageStudio",
+        "CyTools_ComfyFlow"
+      ],
+      "moteur_actuel": "ComfyUI",
+      "travail": "Porter DiT à blocs dual-stream et single-stream, autoencodeur FLUX et profil FP8. Vérifier le support de l’échantillonneur et l’intégration des LoRA.",
+      "dependances": [
+        "clip",
+        "t5"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "taesd",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/taesd",
+      "statut": "valide_windows_cpu",
+      "modeles": [
+        "TAEF1 décodeur FLUX"
+      ],
+      "clients": [
+        "CyTools_ComfyFlow"
+      ],
+      "moteur_actuel": "ComfyUI, PyTorch",
+      "travail": "Porter le décodeur compact de prévisualisation des latents FLUX, avec facteur et biais du checkpoint.",
+      "reference": "https://github.com/madebyollin/taesd",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "Décodeur TAEF1 comparé à PyTorch sur cpu:0 avec les poids CyTools locaux. Erreur maximale 3.06963921e-6.",
+        "documentation": "libraries/taesd/README.md"
+      }
+    },
+    {
+      "id": "qwen_image",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/qwen_image",
+      "statut": "a_porter",
+      "modeles": [
+        "Qwen-Image FP8",
+        "Qwen-Image 2.1 int8",
+        "ControlNet 2.1 int8",
+        "Qwen-Image-Edit 2511 int8",
+        "Qwen-Image 2512 FP8",
+        "Qwen-Image Lightning LoRA"
+      ],
+      "clients": [
+        "CyTools_ImageStudio",
+        "CyTools_Storyboard"
+      ],
+      "moteur_actuel": "ComfyUI",
+      "travail": "Porter Transformer image, VAE et conditionnement texte/édition multi-image. Vérifier les variantes 2.1/2511/2512 et les formats quantifiés. Ajouter la branche ControlNet et les injections LoRA.",
+      "dependances": [
+        "qwen25_vl"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json",
+        "CyTools_Storyboard/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "wan",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/wan",
+      "statut": "a_porter",
+      "modeles": [
+        "Wan 2.1 T2V 1.3B",
+        "Wan 2.2 I2V/T2V A14B high/low",
+        "Wan 2.2 TI2V 5B et Turbo LoRA",
+        "VAE Wan 2.1/2.2"
+      ],
+      "clients": [
+        "CyTools_ComfyFlow",
+        "CyTools_VideoToStereo3D",
+        "CyTools_VideoStudio",
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "ComfyUI, Diffusers, PyTorch",
+      "travail": "Porter DiT vidéo, routage high/low, autoencodeurs vidéo par version, conditionnement I2V/T2V/TI2V. Respecter les profils FP8 et GGUF et réutiliser UMT5 et CLIP Vision selon le workflow.",
+      "dependances": [
+        "t5",
+        "clip"
+      ],
+      "reference": "https://github.com/Wan-Video/Wan2.2",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json",
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "video_depth_anything",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/video_depth_anything",
+      "statut": "valide_windows_cpu",
+      "modeles": [
+        "Video Depth Anything Small, Base et Large"
+      ],
+      "clients": [
+        "CyTools_VideoToStereo3D",
+        "CyTools_VideoStudio",
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "Video Depth Anything, PyTorch",
+      "travail": "Porter la tête temporelle au-dessus de DINOv2, avec fenêtres, mémoire et redimensionnement vidéo de la référence.",
+      "dependances": [
+        "dinov2",
+        "depth_anything_v2"
+      ],
+      "reference": "https://github.com/DepthAnything/Video-Depth-Anything",
+      "fichiers_locaux": 2,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json",
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 2,
+      "avancement": {
+        "etat": "ViT-S/14 et tête temporelle comparés à PyTorch sur cpu:0 sur deux clips avec les poids CyTools locaux. Erreur maximale 5.96046448e-6.",
+        "documentation": "libraries/video_depth_anything/README.md"
+      }
+    },
+    {
+      "id": "stereo_crafter",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/stereo_crafter",
+      "statut": "a_porter",
+      "modeles": [
+        "StereoCrafter",
+        "Stable Video Diffusion XT 1.1 (composants utilisés)"
+      ],
+      "clients": [
+        "CyTools_VideoToStereo3D",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "Diffusers, PyTorch",
+      "travail": "Porter l’inpainting stéréo vidéo conditionné par profondeur/warp et les modules SVD utilisés, dont VAE et encodeur image. Garder le warp stéréo dans la couche de traitement vidéo.",
+      "dependances": [
+        "clip",
+        "video_depth_anything"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "stereo_pilot",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/stereo_pilot",
+      "statut": "a_porter",
+      "modeles": [
+        "StereoPilot",
+        "Wan 2.1 T2V 1.3B"
+      ],
+      "clients": [
+        "CyTools_VideoToStereo3D",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "PyTorch, Wan",
+      "travail": "Porter l’adaptation du pipeline stéréo et ses poids additionnels, avec réutilisation du backbone Wan.",
+      "dependances": [
+        "wan",
+        "video_depth_anything"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_VideoToStereo3D/app/model_catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "minimax_h3",
+      "domaine": "Génération d’images et de vidéos",
+      "dossier": "libraries/minimax_h3",
+      "statut": "a_porter",
+      "modeles": [
+        "MiniMax H3 Base",
+        "MiniMax H3 Turbo communautaire",
+        "Ref2VA",
+        "latent upscaler et FunControlNet"
+      ],
+      "clients": [
+        "CyTools_MiniMaxH3",
+        "CyTools_Storyboard",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "ComfyUI, worker Colab",
+      "travail": "Vérifier les modules réels par version. Porter selon les usages le générateur audiovisuel, les VAE vidéo/audio stéréo, et les branches de conditionnement. Mesurer la mémoire pour FP8 et int8 ConvRot.",
+      "dependances": [
+        "qwen3_vl"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_Storyboard/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "llama",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/llama",
+      "statut": "source_implemente",
+      "modeles": [
+        "Llama 3.1 8B et 3.2 3B",
+        "Dolphin3",
+        "Hermes 3",
+        "Self After Dark",
+        "profil Mistral 7B Instruct v0.3"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "llama.cpp, GGUF",
+      "travail": "Réutiliser l’exemple Llama de ZML. Ajouter/importer le GGUF quantifié et vérifier les profils de positions, tokenizer, template et cache KV. Valider les différences Mistral sur ses métadonnées propres.",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "Lanceur local SafeTensors et inspection du GGUF Dolphin 3. Analyse Bazel Windows, dépendances SentencePiece/SWIG compilées et référence PyTorch déterministe. Compilation complète et génération ZML à vérifier.",
+        "documentation": "libraries/llama/README.md"
+      }
+    },
+    {
+      "id": "qwen2",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/qwen2",
+      "statut": "valide_windows_cpu",
+      "modeles": [
+        "Qwen2.5 1.5B Instruct",
+        "LoRA Qwen2.5 1.5B F16",
+        "CySearchAssist v1 1.5B et CLAP 0.5B"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_AudioLibrary"
+      ],
+      "moteur_actuel": "llama.cpp, Transformers",
+      "travail": "Porter Qwen2.5 avec ses profils de génération, cache KV et tokenizeur. Accepter SafeTensors et GGUF Q8_0, et gérer la LoRA F16.",
+      "fichiers_locaux": 6,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_AudioLibrary/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 6,
+      "avancement": {
+        "etat": "Décodeur court contexte 0.5B, 290 poids BF16 locaux convertis. Trois tokens gloutons identiques à PyTorch FP32 sur chacun des deux prompts sur cpu:0.",
+        "documentation": "libraries/qwen2/README.md"
+      }
+    },
+    {
+      "id": "qwen3",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/qwen3",
+      "statut": "valide_windows_cpu",
+      "modeles": [
+        "Qwen3 0.6B/1.7B/4B/8B/14B",
+        "Nymphaea",
+        "Qwen3-Embedding-0.6B",
+        "ACE-Step 5Hz LM"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab",
+        "CyTools_AudioLibrary",
+        "CyTools_AudioStudio",
+        "CyTools_ComfyFlow"
+      ],
+      "moteur_actuel": "llama.cpp, Transformers",
+      "travail": "Porter Qwen3 avec Q/K norm, cache KV, tokenizer et sorties génération/embedding/conditionnement. Traiter GGUF, poids segmentés et pooling spécifique de l’encodeur.",
+      "fichiers_locaux": 4,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_AudioLibrary/app/models/catalog.json",
+        "CyTools_AudioStudio/app/models/catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 4,
+      "avancement": {
+        "etat": "Décodeur court contexte 1.7B, 311 poids BF16 locaux convertis depuis deux fragments. Trois tokens gloutons identiques à PyTorch FP32 sur chacun des deux prompts sur cpu:0.",
+        "documentation": "libraries/qwen3/README.md"
+      }
+    },
+    {
+      "id": "qwen35",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/qwen35",
+      "statut": "source_implemente",
+      "modeles": [
+        "Qwen 3.6 12B Hightop",
+        "Qwen 3.8 27B Cold Fusion (noms de catalogue, qwen35 déclaré)"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "llama.cpp, GGUF",
+      "travail": "Partir des graphes Qwen3.5 dense et MoE du fork. Confirmer modèle et variante à partir des GGUF, profils Q4_K_M et IQ4_XS, état récurrent, éventuels poids MTP et templates.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "Lanceur local SafeTensors pour les profils dense et MoE. Analyse Bazel Windows et compilation ciblée de SentencePiece/SWIG réussies. Build complet et génération avec poids locaux à vérifier.",
+        "documentation": "libraries/qwen35/README.md"
+      }
+    },
+    {
+      "id": "gemma4",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/gemma4",
+      "statut": "a_porter",
+      "modeles": [
+        "Gemma 4 E4B"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "llama.cpp, GGUF",
+      "travail": "Porter le profil texte E4B avec attention, état et paramètres propres au checkpoint. Confirmer les composants multimodaux fournis avant d’étendre les capacités.",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1
+    },
+    {
+      "id": "gpt_oss",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/gpt_oss",
+      "statut": "a_porter",
+      "modeles": [
+        "GPT-OSS 20B Heretic ARA v3"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "llama.cpp, GGUF",
+      "travail": "Porter le graphe MoE, les paramètres GPT-OSS, le profil MXFP4 et le format de conversation Harmony.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "qwen25_vl",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/qwen25_vl",
+      "statut": "a_porter",
+      "modeles": [
+        "Qwen2.5-VL 7B GGUF vision",
+        "Qwen2.5-VL FP8 scaled, encodeur Qwen-Image"
+      ],
+      "clients": [
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab",
+        "CyTools_ImageStudio",
+        "CyTools_Storyboard"
+      ],
+      "moteur_actuel": "llama.cpp/LLaVA, ComfyUI, Transformers",
+      "travail": "Porter encodeur vision, fusion des patches, positions temporelles/spatiales, prétraitement et projecteur `mmproj`. Exposer les embeddings de conditioning indépendamment du mode dialogue.",
+      "dependances": [
+        "qwen2"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_ImageStudio/app/model_catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json",
+        "CyTools_Storyboard/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "internvl3",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/internvl3",
+      "statut": "a_porter",
+      "modeles": [
+        "InternVL3 8B vision"
+      ],
+      "clients": [
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "llama.cpp avec mmproj",
+      "travail": "Porter vision, découpage multi-images et projecteur InternVL. Vérifier le backbone LLM déclaré et partager Qwen2.5 là où les tenseurs concordent.",
+      "dependances": [
+        "qwen2"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "qwen3_vl",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/qwen3_vl",
+      "statut": "a_porter",
+      "modeles": [
+        "Qwen3-VL-32B, encodeur MiniMax H3"
+      ],
+      "clients": [
+        "CyTools_MiniMaxH3",
+        "CyTools_Storyboard",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "ComfyUI, Transformers",
+      "travail": "Porter l’encodeur visuel et sa fusion de couches, avec le chemin d’embeddings attendu par H3. Vérifier les différences par rapport à Qwen2.5-VL.",
+      "dependances": [
+        "qwen3"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_Storyboard/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "darkidol_voice",
+      "domaine": "Texte et multimodal",
+      "dossier": "libraries/darkidol_voice",
+      "statut": "architecture_a_confirmer",
+      "modeles": [
+        "DarkIdol Voice sur Qwen3.8 Cold Fusion 27B"
+      ],
+      "clients": [
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "llama.cpp, checkpoint et projecteur déclarés",
+      "travail": "Identifier précisément le graphe et le format de projection voix du bundle. Réutiliser le profil Qwen3.5 uniquement après confirmation.",
+      "dependances": [
+        "qwen35"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "m2d_clap",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/m2d_clap",
+      "statut": "a_porter",
+      "modeles": [
+        "M2D-CLAP 2024 et 2025"
+      ],
+      "clients": [
+        "CyTools_AudioLibrary"
+      ],
+      "moteur_actuel": "PyTorch, M2D-CLAP",
+      "travail": "Porter tour audio M2D, encodeur texte BERT et projections CLAP, avec normalisation, log-mel et embeddings normalisés.",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_AudioLibrary/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1
+    },
+    {
+      "id": "laion_clap",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/laion_clap",
+      "statut": "port_existant_a_etendre",
+      "modeles": [
+        "LAION-CLAP HTSAT unfused",
+        "tour texte CLAP d’AudioLDM"
+      ],
+      "clients": [
+        "CyTools_AudioLibrary",
+        "CyTools_AudioStudio"
+      ],
+      "moteur_actuel": "Transformers, Diffusers",
+      "travail": "Porter HTSAT, projections et tour texte de type RoBERTa. Vérifier poids, variante, tokenizer et contrat de sortie par client.",
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_AudioLibrary/app/models/catalog.json",
+        "CyTools_AudioStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "Tour texte AudioLDM à 203 poids locaux validée sur cpu:0. Erreur absolue maximale 1.45286322e-7 sur l’embedding normalisé. HTSAT et tokenizer natif à intégrer.",
+        "documentation": "libraries/laion_clap/README.md"
+      }
+    },
+    {
+      "id": "omni_embed_audio",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/omni_embed_audio",
+      "statut": "a_porter",
+      "modeles": [
+        "Omni-Embed-Audio qwen3b-cl et qwen3b-ac",
+        "Qwen2.5-Omni-3B"
+      ],
+      "clients": [
+        "CyTools_AudioLibrary"
+      ],
+      "moteur_actuel": "Transformers, PyTorch",
+      "travail": "Porter le chemin audio, fusion, projections et pooling nécessaires aux embeddings déclarés. Vérifier les poids de chaque profil.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AudioLibrary/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "audio_flamingo",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/audio_flamingo",
+      "statut": "integration_a_specifier",
+      "modeles": [
+        "Audio Flamingo 3"
+      ],
+      "clients": [
+        "CyTools_AudioLibrary"
+      ],
+      "moteur_actuel": "Transformers, route déclarée sans adaptateur applicatif",
+      "travail": "Confirmer les modules et établir le contrat audio-vers-texte et les sorties utilisées avant intégration.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AudioLibrary/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "audioldm",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/audioldm",
+      "statut": "valide_windows_cpu",
+      "modeles": [
+        "AudioLDM-S Full v2"
+      ],
+      "clients": [
+        "CyTools_AudioStudio"
+      ],
+      "moteur_actuel": "Diffusers, PyTorch",
+      "travail": "Porter U-Net 2D conditionné, VAE de spectrogramme, scheduler DDIM et vocodeur SpeechT5 HiFi-GAN 16 kHz. Charger les quatre composants séparés.",
+      "dependances": [
+        "laion_clap"
+      ],
+      "fichiers_locaux": 4,
+      "catalogues_clients": [
+        "CyTools_AudioStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 4,
+      "avancement": {
+        "vocodeur": "HiFi-GAN comparé à PyTorch sur cpu:0 avec les poids CyTools locaux. Erreur maximale 3.63588333e-6.",
+        "decodeur_vae": "114 tenseurs locaux et raccordement Zig au vocodeur, validés sur cpu:0. Écarts PyTorch maximaux 4.76837158e-6 pour le log-mel et 2.53785402e-8 pour le signal.",
+        "generation": "AudioLDM-S Full v2, des tokens et du bruit initial au signal mono. Poids CyTools vérifiés sur cpu:0 sur deux pas DDIM avec guidage. Écarts 1.23977661e-5 sur le latent et 2.15694308e-6 sur les 5152 échantillons.",
+        "documentation_decodeur": "libraries/audioldm/README.md",
+        "documentation_vocodeur": "libraries/hifigan/README.md"
+      }
+    },
+    {
+      "id": "acestep",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/acestep",
+      "statut": "a_porter",
+      "modeles": [
+        "ACE-Step 1.5 Turbo",
+        "ACE-Step 5Hz LM 1.7B",
+        "Qwen3-Embedding 0.6B",
+        "AutoencoderOobleck"
+      ],
+      "clients": [
+        "CyTools_AudioStudio"
+      ],
+      "moteur_actuel": "ACE-Step, PyTorch",
+      "travail": "Porter le DiT de diffusion audio, ses conditions, l’autoencodeur Oobleck 48 kHz et le chemin LM/embeddings. Charger le tenseur silence_latent comme donnée auxiliaire.",
+      "dependances": [
+        "qwen3"
+      ],
+      "reference": "https://github.com/ace-step/ACE-Step-1.5",
+      "fichiers_locaux": 5,
+      "catalogues_clients": [
+        "CyTools_AudioStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 4
+    },
+    {
+      "id": "fish_speech",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/fish_speech",
+      "statut": "a_porter",
+      "modeles": [
+        "Fish Speech S2 Pro"
+      ],
+      "clients": [
+        "CyTools_AudioStudio"
+      ],
+      "moteur_actuel": "Fish Speech, PyTorch",
+      "travail": "Porter la génération texte-vers-tokens et le codec audio utilisé par la révision S2 Pro. Vérifier le clonage de voix avec la référence.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AudioStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "qwen3_tts",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/qwen3_tts",
+      "statut": "a_porter",
+      "modeles": [
+        "Qwen3-TTS 12 Hz 0.6B et 1.7B Base, CustomVoice et VoiceDesign"
+      ],
+      "clients": [
+        "CyTools_AudioStudio",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "qwen-tts, PyTorch",
+      "travail": "Porter Talker, prédiction de codes, tokenizer audio 12 Hz, décodeur et paramétrage des différents profils d’inférence.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AudioStudio/app/models/catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "piper",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/piper",
+      "statut": "a_porter",
+      "modeles": [
+        "Piper voices (catalogue de 177 profils)"
+      ],
+      "clients": [
+        "CyTools_AudioStudio"
+      ],
+      "moteur_actuel": "Piper, ONNX Runtime",
+      "travail": "Partager VITS/Piper avec phonémisation eSpeak NG, mapping phonèmes/speakers et paramètres par voix. Importer ONNX ou produire une conversion et comparer avec le moteur actuel.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AudioStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "xtts",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/xtts",
+      "statut": "a_porter",
+      "modeles": [
+        "XTTS-v2"
+      ],
+      "clients": [
+        "CyTools_AIChat"
+      ],
+      "moteur_actuel": "Coqui TTS, PyTorch",
+      "travail": "Porter speaker conditioning, génération de codes et vocodeur, avec préparation du son de référence.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "f5_tts",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/f5_tts",
+      "statut": "a_porter",
+      "modeles": [
+        "F5-TTS v1 Base",
+        "F5-TTS français",
+        "Vocos mel 24 kHz"
+      ],
+      "clients": [
+        "CyTools_AIChat"
+      ],
+      "moteur_actuel": "F5-TTS, Vocos, PyTorch",
+      "travail": "Porter le DiT de flow matching et Vocos. Vérifier vocabulaire, normalisation audio et profil du fine-tune français.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "whisper",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/whisper",
+      "statut": "a_porter",
+      "modeles": [
+        "Whisper large-v3 turbo"
+      ],
+      "clients": [
+        "CyTools_AudioStudio",
+        "CyTools_PersonaRP",
+        "CyTools_PersonaRP_Colab"
+      ],
+      "moteur_actuel": "Workers Whisper existants",
+      "travail": "Porter encodeur log-mel, décodage séquentiel, tokenizer, timestamps et segmentation de transcription.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AudioStudio/app/models/catalog.json",
+        "CyTools_PersonaRP/app/llm-catalog.json",
+        "CyTools_PersonaRP/app/tts-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+        "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "parakeet_tdt",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/parakeet_tdt",
+      "statut": "a_porter",
+      "modeles": [
+        "Parakeet TDT 0.6B v3"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_Subtitle"
+      ],
+      "moteur_actuel": "Transformers/NeMo, workers de transcription",
+      "travail": "Porter encodeur audio et transducteur TDT avec prédiction de durée, tokenizer et timestamps.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_Subtitle/app/diarization-model-catalog.json",
+        "CyTools_Subtitle/app/model-catalog.json",
+        "CyTools_Subtitle/app/nemotron-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "phonon",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/phonon",
+      "statut": "architecture_a_confirmer",
+      "modeles": [
+        "Phonon 2 et 2.5",
+        ".fermion Int6",
+        "distribution .bps.tar.zst",
+        ".fsq"
+      ],
+      "clients": [
+        "CyTools_AIChat",
+        "CyTools_Subtitle"
+      ],
+      "moteur_actuel": "Fermion / phonon-cli",
+      "travail": "Vérifier l’architecture et la disposition des paramètres de chaque édition. Porter le décodage audio/texte et les formats locaux ou fournir une conversion reproductible. Conserver les variantes quantifiées et la gestion des timings.",
+      "fichiers_locaux": 4,
+      "catalogues_clients": [
+        "CyTools_AIChat/app/llm-catalog.json",
+        "CyTools_AIChat/app/speech-catalog.json",
+        "CyTools_Subtitle/app/diarization-model-catalog.json",
+        "CyTools_Subtitle/app/model-catalog.json",
+        "CyTools_Subtitle/app/nemotron-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 4
+    },
+    {
+      "id": "pyannote",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/pyannote",
+      "statut": "a_porter",
+      "modeles": [
+        "pyannote speaker-diarization-community-1"
+      ],
+      "clients": [
+        "CyTools_Subtitle"
+      ],
+      "moteur_actuel": "pyannote.audio, PyTorch",
+      "travail": "Porter segmentation et embedding de locuteur. Charger transformée x-vector et PLDA et reproduire le clustering, les seuils et le découpage temporel.",
+      "fichiers_locaux": 4,
+      "catalogues_clients": [
+        "CyTools_Subtitle/app/diarization-model-catalog.json",
+        "CyTools_Subtitle/app/model-catalog.json",
+        "CyTools_Subtitle/app/nemotron-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 2
+    },
+    {
+      "id": "nemotron_diarization",
+      "domaine": "Audio, voix et parole",
+      "dossier": "libraries/nemotron_diarization",
+      "statut": "a_porter",
+      "modeles": [
+        "Nemotron-3-Diarization Q8_0"
+      ],
+      "clients": [
+        "CyTools_Subtitle"
+      ],
+      "moteur_actuel": "NeMo-Speech.cpp, GGUF",
+      "travail": "Porter le graphe Sortformer, confirmé par les en-têtes des GGUF Q8_0 locaux, et le post-traitement des pistes de locuteurs.",
+      "reference": "https://huggingface.co/nvidia/Nemotron-3-Diarization",
+      "fichiers_locaux": 2,
+      "catalogues_clients": [
+        "CyTools_Subtitle/app/diarization-model-catalog.json",
+        "CyTools_Subtitle/app/model-catalog.json",
+        "CyTools_Subtitle/app/nemotron-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 2
+    },
+    {
+      "id": "zero123plus",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/zero123plus",
+      "statut": "a_porter",
+      "modeles": [
+        "Zero123++ v1.2",
+        "ControlNet normal Zero123++"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "Diffusers, PyTorch",
+      "travail": "Porter le pipeline dédié avec conditionnement d’image, génération multivue et branche ControlNet normals.",
+      "dependances": [
+        "clip"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "syncdreamer",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/syncdreamer",
+      "statut": "a_porter",
+      "modeles": [
+        "SyncDreamer"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, runtime CUDA historique",
+      "travail": "Porter l’architecture de diffusion multivue et ses correspondances entre vues, avec les poses attendues.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "wonder3d",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/wonder3d",
+      "statut": "a_porter",
+      "modeles": [
+        "Wonder3D v1.0"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, runtime CUDA historique",
+      "travail": "Porter le débruitage multivue et les branches couleur/normales, avec les conditionnements propres au modèle.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "stablenormal",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/stablenormal",
+      "statut": "a_porter",
+      "modeles": [
+        "StableNormal YOSO"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, Hi3DGen",
+      "travail": "Porter l’estimateur de normales et son pipeline de diffusion rapide, en gardant le prétraitement image.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "trellis",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/trellis",
+      "statut": "a_porter",
+      "modeles": [
+        "TRELLIS-image-large"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, opérateurs sparse, TRELLIS",
+      "travail": "Porter diffusion de structure et latents sparse, puis têtes de décodage rendues nécessaires par l’usage. Établir les primitives de coordonnées et convolution sparse.",
+      "dependances": [
+        "dinov2"
+      ],
+      "reference": "https://github.com/microsoft/TRELLIS",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "trellis2",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/trellis2",
+      "statut": "a_porter",
+      "modeles": [
+        "TRELLIS.2-4B FP8"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, TRELLIS.2",
+      "travail": "Porter le générateur et ses décodeurs, avec stockage FP8 et reconstruction surface/matériaux. Réutiliser la couche sparse commune après vérification.",
+      "dependances": [
+        "dinov3",
+        "birefnet"
+      ],
+      "reference": "https://github.com/microsoft/TRELLIS.2",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "hi3dgen",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/hi3dgen",
+      "statut": "a_porter",
+      "modeles": [
+        "Hi3DGen normal-to-geometry"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, Hi3DGen/TRELLIS",
+      "travail": "Porter le conditionnement des normales et la variante de diffusion sparse, puis vérifier le partage des décodeurs TRELLIS.",
+      "dependances": [
+        "stablenormal",
+        "dinov2",
+        "trellis"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "localmesh_multivue",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/localmesh_multivue",
+      "statut": "architecture_a_confirmer",
+      "modeles": [
+        "LocalMesh multi-view camera stack"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "Modules dynamiques Hugging Face, PyTorch",
+      "travail": "Identifier les poids et graphes réellement nécessaires dans le bundle local. Le cache de modules est un artefact de distribution.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "spar3d",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/spar3d",
+      "statut": "a_porter",
+      "modeles": [
+        "SPAR3D"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, runtime torch-cu124",
+      "travail": "Porter le générateur de nuage de points et la reconstruction implicite avec ses conditionnements, puis raccorder l’extraction et les matériaux.",
+      "dependances": [
+        "dinov2",
+        "alpha_clip",
+        "transparent_background"
+      ],
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "triposr",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/triposr",
+      "statut": "a_porter",
+      "modeles": [
+        "TripoSR"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, runtime torch-cu124",
+      "travail": "Porter le Transformer image-vers-triplane et le décodage du champ. Raccorder le détourage et l’extraction de maillage.",
+      "dependances": [
+        "dino_v1",
+        "u2net"
+      ],
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "unirig",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/unirig",
+      "statut": "a_porter",
+      "modeles": [
+        "UniRig Articulation-XL"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, runtime torch-cu124",
+      "travail": "Porter les prédicteurs de squelette et de poids de skinning, avec les étapes géométriques en amont et aval.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "wham",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/wham",
+      "statut": "a_porter",
+      "modeles": [
+        "WHAM",
+        "assets SMPL"
+      ],
+      "clients": [
+        "CyTools_MeshStudio"
+      ],
+      "moteur_actuel": "PyTorch, runtime WHAM",
+      "travail": "Porter la reconstruction temporelle du mouvement humain. Inventorier les détecteurs et ressources de pose utilisés par le bundle. Charger SMPL comme ressource géométrique.",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_MeshStudio/app/models/catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "vitpose",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/vitpose",
+      "statut": "a_porter",
+      "modeles": [
+        "ViTPose-H multi-COCO"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "PyTorch, GVHMR",
+      "travail": "Porter ViT de pose et les heatmaps, avec recadrage depuis les boîtes du détecteur.",
+      "dependances": [
+        "yolov8"
+      ],
+      "fichiers_locaux": 1,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1
+    },
+    {
+      "id": "hmr2",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/hmr2",
+      "statut": "a_porter",
+      "modeles": [
+        "HMR2 / 4DHumans"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "PyTorch, GVHMR",
+      "travail": "Porter l’estimation humaine monoculaire et le décodeur de paramètres corporels. Traiter les assets SMPL comme données.",
+      "fichiers_locaux": 2,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1
+    },
+    {
+      "id": "gvhmr",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/gvhmr",
+      "statut": "a_porter",
+      "modeles": [
+        "GVHMR SIGA24 release"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "PyTorch, GVHMR",
+      "travail": "Porter la reconstruction temporelle dans le repère monde avec les conditions de pose, caractéristiques HMR2 et mouvement de caméra.",
+      "dependances": [
+        "vitpose",
+        "hmr2"
+      ],
+      "fichiers_locaux": 8,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 1
+    },
+    {
+      "id": "four_d_anyone",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/four_d_anyone",
+      "statut": "a_porter",
+      "modeles": [
+        "4DAnyone",
+        "entraînement/prior Wan TI2V prévu par le bundle"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "PyTorch, CUDA, rendu Gaussian splats",
+      "travail": "Vérifier le graphe du checkpoint principal. Raccorder le prior Wan, les masques, les poses, les assets SMPLX et le rendu Gaussian splats côté hôte. VGG19 est utilisé par la perte perceptuelle de la phase d’optimisation Splatfacto.",
+      "dependances": [
+        "birefnet",
+        "gvhmr",
+        "wan"
+      ],
+      "reference": "https://github.com/ant-research/4DAnyone",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "sharp",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/sharp",
+      "statut": "a_porter",
+      "modeles": [
+        "Apple SHARP"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "PyTorch, SHARP",
+      "travail": "Porter le prédicteur monoculaire d’une scène 3D Gaussian Splat. Garder projection, rendu et sérialisation PLY dans la couche géométrique.",
+      "reference": "https://github.com/apple-aiml-research/ml-sharp",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "t4gs",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/t4gs",
+      "statut": "a_porter",
+      "modeles": [
+        "C4G / T4GS"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian",
+        "CyTools_VideoStudio"
+      ],
+      "moteur_actuel": "PyTorch, worker C4G",
+      "travail": "Porter le backbone VGGT, les requêtes temporelles et le décodeur Gaussian splats du checkpoint t4gs.ckpt. Distinguer les modules du worker CyTools des extensions optionnelles du projet amont.",
+      "reference": "https://github.com/cvlab-kaist/T4GS",
+      "fichiers_locaux": 0,
+      "catalogues_clients": [
+        "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+        "CyTools_VideoToGaussian/app/sharp-catalog.json"
+      ],
+      "fichiers_de_modele_locaux": 0
+    }
+  ],
+  "socle_partage": [
+    {
+      "sujet": "Poids et précisions",
+      "travail": "Étendre le lecteur actuellement F32 aux SafeTensors F16/BF16 et aux index multi-fichiers. Spécifier FP8 et échelles, GGUF Q4_K_S/Q4_K_M/Q8_0/IQ4_XS, MXFP4, ONNX Piper et les conteneurs Phonon via un import ou une conversion reproductible."
+    },
+    {
+      "sujet": "Import de PyTorch",
+      "travail": "Normaliser params_ema/params, préfixes et composants de checkpoint. Extraire les .pt Ultralytics avec les versions et des poids de confiance. Conserver noms, formes, provenance et licence par profil."
+    },
+    {
+      "sujet": "Interfaces applicatives",
+      "travail": "ABI C et workers avec session par modèle, composition de plusieurs modèles, buffers image/audio/vidéo/texte, choix du backend et rapport du périphérique. Cache KV, mémoire SAM2 et flux temporels par session."
+    },
+    {
+      "sujet": "Opérateurs vision et diffusion",
+      "travail": "Tokenizers, attention, scheduler, guidance, LoRA et poids par composants. Prétraitements reproductibles, échantillonnage biléaire dynamique, NMS, morphologie et suivi selon la famille."
+    },
+    {
+      "sujet": "Géométrie et médias",
+      "travail": "Garder FFmpeg, resampling, phonémisation, warp, COLMAP, rendu splats, extraction/remeshing et optimisation FreeTimeGs dans les outils hôte. Relever les opérateurs sparse nécessaires à TRELLIS/TRELLIS.2."
+    },
+    {
+      "sujet": "Connecteurs et SDK",
+      "travail": "Les connecteurs d'API, le pont Colab et le SDK NVIDIA RTX Video Super Resolution ont leurs propres contrats d'intégration côté client."
+    },
+    {
+      "sujet": "Validation par profil",
+      "travail": "Comparer tenseurs et sorties avec les références et les mêmes poids, précision et entrées. Tester prétraitement, post-traitement, inférences répétées, libération et backend réel sur Windows x64."
+    }
+  ],
+  "fichiers_comfyui": [
+    {
+      "chemin": "depthanything/depth_anything_v2_vitl_fp16.safetensors",
+      "format": "safetensors",
+      "octets": 670674810,
+      "adaptateur": "depth_anything_v2",
+      "role": "checkpoint",
+      "verification": "ViT-L/14, patch embedding [1024,3,14,14]",
+      "tenseurs": 407,
+      "precision": "F16"
+    },
+    {
+      "chemin": "facedetection/detection_Resnet50_Final.pth",
+      "format": "pth",
+      "octets": 109497761,
+      "adaptateur": "retinaface",
+      "role": "checkpoint",
+      "verification": "383 F32 et 73 compteurs BN I64, préfixe module.",
+      "tenseurs": 456,
+      "precision": "F32/I64"
+    },
+    {
+      "chemin": "facedetection/parsing_parsenet.pth",
+      "format": "pth",
+      "octets": 85331193,
+      "adaptateur": "parsenet",
+      "role": "checkpoint",
+      "verification": "ParseNet 19 classes",
+      "tenseurs": 238,
+      "precision": "F32/I64"
+    },
+    {
+      "chemin": "facerestore_models/codeformer.pth",
+      "format": "pth",
+      "octets": 376637898,
+      "adaptateur": "codeformer",
+      "role": "checkpoint",
+      "verification": "params_ema, codebook [1024,256]",
+      "tenseurs": 515,
+      "precision": "F32"
+    },
+    {
+      "chemin": "sam2/sam2_hiera_base_plus.safetensors",
+      "format": "safetensors",
+      "octets": 323407992,
+      "adaptateur": "sam2",
+      "role": "checkpoint",
+      "verification": "Hiera base+, version SAM 2.0",
+      "tenseurs": 612,
+      "precision": "F32"
+    },
+    {
+      "chemin": "sams/sam_vit_b_01ec64.pth",
+      "format": "pth",
+      "octets": 375042383,
+      "adaptateur": "sam",
+      "role": "checkpoint",
+      "verification": "ViT-B/16",
+      "tenseurs": 314,
+      "precision": "F32"
+    },
+    {
+      "chemin": "ultralytics/bbox/face_yolov8m.pt",
+      "format": "pt",
+      "octets": 52026019,
+      "adaptateur": "yolov8",
+      "role": "checkpoint",
+      "verification": "Ultralytics DetectionModel, 1 classe face"
+    },
+    {
+      "chemin": "ultralytics/bbox/hand_yolov8s.pt",
+      "format": "pt",
+      "octets": 22507643,
+      "adaptateur": "yolov8",
+      "role": "checkpoint",
+      "verification": "Ultralytics DetectionModel, 1 classe hand"
+    },
+    {
+      "chemin": "ultralytics/segm/person_yolov8m-seg.pt",
+      "format": "pt",
+      "octets": 54827683,
+      "adaptateur": "yolov8",
+      "role": "checkpoint",
+      "verification": "Ultralytics SegmentationModel, 1 classe person"
+    },
+    {
+      "chemin": "upscale_models/4x_NMKD-Siax_200k.pth",
+      "format": "pth",
+      "octets": 66957746,
+      "adaptateur": "realesrgan",
+      "role": "checkpoint",
+      "verification": "state_dict plat, 23 blocs, clés ESRGAN historiques",
+      "tenseurs": 702,
+      "precision": "F32"
+    },
+    {
+      "chemin": "upscale_models/4x_RealisticRescaler_100000_G.pth",
+      "format": "pth",
+      "octets": 134051293,
+      "adaptateur": "realesrgan",
+      "role": "checkpoint",
+      "verification": "params_ema et params, 23 blocs, schéma du port",
+      "tenseurs": 702,
+      "precision": "F32"
+    },
+    {
+      "chemin": "upscale_models/4xNomos2_realplksr_dysample.pth",
+      "format": "pth",
+      "octets": 29715988,
+      "adaptateur": "realplksr",
+      "role": "checkpoint",
+      "verification": "28 blocs, conv partielle [16,16,17,17], DySample offset/scope/init_pos",
+      "tenseurs": 346,
+      "precision": "F32"
+    },
+    {
+      "chemin": "upscale_models/RealESRGAN_x4plus.pth",
+      "format": "pth",
+      "octets": 67040989,
+      "adaptateur": "realesrgan",
+      "role": "checkpoint",
+      "verification": "params_ema, 23 blocs, schéma du port",
+      "tenseurs": 702,
+      "precision": "F32"
+    }
+  ],
+  "configurations_comfyui": [
+    "configs/anything_v3.yaml",
+    "configs/v1-inference.yaml",
+    "configs/v1-inference_clip_skip_2.yaml",
+    "configs/v1-inference_clip_skip_2_fp16.yaml",
+    "configs/v1-inference_fp16.yaml",
+    "configs/v1-inpainting-inference.yaml",
+    "configs/v2-inference-v.yaml",
+    "configs/v2-inference-v_fp32.yaml",
+    "configs/v2-inference.yaml",
+    "configs/v2-inference_fp32.yaml",
+    "configs/v2-inpainting-inference.yaml"
+  ],
+  "fichiers_cytools": [
+    {
+      "chemin": "CyTools_AIChat/data/models/lora/lora-qwen25-abliterated/LoRA-Qwen2.5-1.5B-Instruct-abliterated-f16.gguf",
+      "format": "gguf",
+      "octets": 374395136,
+      "adaptateur": "qwen2",
+      "role": "lora",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 453,
+        "architecture": "qwen2",
+        "nom": "LoRA Qwen2.5 1.5B Instruct Abliterated"
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/cymetasound-search-assist-0.5b/v1/_dequantized/model.safetensors",
+      "format": "safetensors",
+      "octets": 988097824,
+      "adaptateur": "qwen2",
+      "role": "conversion_locale",
+      "tenseurs": 290,
+      "tenseurs_par_precision": {
+        "BF16": 290
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/cymetasound-search-assist-0.5b/v1/CySearchAssist-CLAP-0.5B-v1-Q8_0.gguf",
+      "format": "gguf",
+      "octets": 531067680,
+      "adaptateur": "qwen2",
+      "role": "checkpoint",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 290,
+        "architecture": "qwen2",
+        "nom": "Model",
+        "type_quantification": 7
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/cytools-search-assist/v1/_dequantized/model.safetensors",
+      "format": "safetensors",
+      "octets": 3087467144,
+      "adaptateur": "qwen2",
+      "role": "conversion_locale",
+      "tenseurs": 338,
+      "tenseurs_par_precision": {
+        "BF16": 338
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/cytools-search-assist/v1/CySearchAssist-v1-Q8_0.gguf",
+      "format": "gguf",
+      "octets": 1646572544,
+      "adaptateur": "qwen2",
+      "role": "checkpoint",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 338,
+        "architecture": "qwen2",
+        "nom": "Model",
+        "type_quantification": 7
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/cytools-search-assist/v1-safetensors/model.safetensors",
+      "format": "safetensors",
+      "octets": 3087466808,
+      "adaptateur": "qwen2",
+      "role": "conversion_locale",
+      "tenseurs": 338,
+      "tenseurs_par_precision": {
+        "F16": 338
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/laion-clap/htsat-unfused/pytorch_model.bin",
+      "format": "bin",
+      "octets": 614525833,
+      "adaptateur": "laion_clap",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/m2d-clap/2025/m2d_clap_vit_base-80x1001p16x16p16kpBpTI-2025/checkpoint-30.pth",
+      "format": "pth",
+      "octets": 1694677655,
+      "adaptateur": "m2d_clap",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/qwen3-1.7b/2025-04/model-00001-of-00002.safetensors",
+      "format": "safetensors",
+      "octets": 3441185608,
+      "adaptateur": "qwen3",
+      "role": "fragment_de_checkpoint",
+      "tenseurs": 310,
+      "tenseurs_par_precision": {
+        "BF16": 310
+      }
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/data/models/qwen3-1.7b/2025-04/model-00002-of-00002.safetensors",
+      "format": "safetensors",
+      "octets": 622329984,
+      "adaptateur": "qwen3",
+      "role": "fragment_de_checkpoint",
+      "tenseurs": 1,
+      "tenseurs_par_precision": {
+        "BF16": 1
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/acestep/acestep-5Hz-lm-1.7B/model.safetensors",
+      "format": "safetensors",
+      "octets": 3708521528,
+      "adaptateur": "acestep",
+      "role": "composant",
+      "tenseurs": 310,
+      "tenseurs_par_precision": {
+        "BF16": 310
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/acestep/acestep-v15-turbo/model.safetensors",
+      "format": "safetensors",
+      "octets": 4787825604,
+      "adaptateur": "acestep",
+      "role": "composant",
+      "tenseurs": 677,
+      "tenseurs_par_precision": {
+        "BF16": 677
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/acestep/acestep-v15-turbo/silence_latent.pt",
+      "format": "pt",
+      "octets": 3841215,
+      "adaptateur": "acestep",
+      "role": "latent_auxiliaire"
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/acestep/Qwen3-Embedding-0.6B/model.safetensors",
+      "format": "safetensors",
+      "octets": 1191586416,
+      "adaptateur": "acestep",
+      "role": "composant",
+      "tenseurs": 310,
+      "tenseurs_par_precision": {
+        "BF16": 310
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/acestep/vae/diffusion_pytorch_model.safetensors",
+      "format": "safetensors",
+      "octets": 337431388,
+      "adaptateur": "acestep",
+      "role": "composant",
+      "tenseurs": 365,
+      "tenseurs_par_precision": {
+        "BF16": 365
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/audioldm/feeb3d14203495a4b6ac0893cbdedb2159b4819c/text_encoder/model.safetensors",
+      "format": "safetensors",
+      "octets": 501241456,
+      "adaptateur": "audioldm",
+      "role": "composant",
+      "tenseurs": 205,
+      "tenseurs_par_precision": {
+        "F32": 203,
+        "I64": 2
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/audioldm/feeb3d14203495a4b6ac0893cbdedb2159b4819c/unet/diffusion_pytorch_model.safetensors",
+      "format": "safetensors",
+      "octets": 740228912,
+      "adaptateur": "audioldm",
+      "role": "composant",
+      "tenseurs": 690,
+      "tenseurs_par_precision": {
+        "F32": 690
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/audioldm/feeb3d14203495a4b6ac0893cbdedb2159b4819c/vae/diffusion_pytorch_model.safetensors",
+      "format": "safetensors",
+      "octets": 221530316,
+      "adaptateur": "audioldm",
+      "role": "composant",
+      "tenseurs": 204,
+      "tenseurs_par_precision": {
+        "F32": 204
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/audioldm/feeb3d14203495a4b6ac0893cbdedb2159b4819c/vocoder/model.safetensors",
+      "format": "safetensors",
+      "octets": 221079092,
+      "adaptateur": "audioldm",
+      "role": "composant",
+      "tenseurs": 196,
+      "tenseurs_par_precision": {
+        "F32": 196
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/llm/qwen3-1.7b/model-00001-of-00002.safetensors",
+      "format": "safetensors",
+      "octets": 3441185608,
+      "adaptateur": "qwen3",
+      "role": "fragment_de_checkpoint",
+      "tenseurs": 310,
+      "tenseurs_par_precision": {
+        "BF16": 310
+      }
+    },
+    {
+      "chemin": "CyTools_AudioStudio/data/models/llm/qwen3-1.7b/model-00002-of-00002.safetensors",
+      "format": "safetensors",
+      "octets": 622329984,
+      "adaptateur": "qwen3",
+      "role": "fragment_de_checkpoint",
+      "tenseurs": 1,
+      "tenseurs_par_precision": {
+        "BF16": 1
+      }
+    },
+    {
+      "chemin": "CyTools_ComfyFlow/data/models/vae_approx/taef1_decoder.pth",
+      "format": "pth",
+      "octets": 4943336,
+      "adaptateur": "taesd",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_MeshStudio/runtime/sources/SPAR3D/load/tets/160_tets.npz",
+      "format": "npz",
+      "octets": 15408790,
+      "adaptateur": "spar3d",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_PersonaRP/data/models/llm/dolphin3-8b/Dolphin3.0-Llama3.1-8B-Q4_K_M.gguf",
+      "format": "gguf",
+      "octets": 4920745856,
+      "adaptateur": "llama",
+      "role": "checkpoint",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 292,
+        "architecture": "llama",
+        "nom": "Dolphin 3.0 Llama 3.1 8B",
+        "type_quantification": 15
+      }
+    },
+    {
+      "chemin": "CyTools_PersonaRP/data/models/llm/gemma4-e4b/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",
+      "format": "gguf",
+      "octets": 5335285728,
+      "adaptateur": "gemma4",
+      "role": "checkpoint",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 720,
+        "architecture": "gemma4",
+        "nom": "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
+        "type_quantification": 15
+      }
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/diarization/2f00fe9ca54a40a0bfbd192b3dbeecaf/embedding/pytorch_model.bin",
+      "format": "bin",
+      "octets": 26646242,
+      "adaptateur": "pyannote",
+      "role": "composant"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/diarization/2f00fe9ca54a40a0bfbd192b3dbeecaf/plda/plda.npz",
+      "format": "npz",
+      "octets": 133852,
+      "adaptateur": "pyannote",
+      "role": "parametres_plda"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/diarization/2f00fe9ca54a40a0bfbd192b3dbeecaf/plda/xvec_transform.npz",
+      "format": "npz",
+      "octets": 134376,
+      "adaptateur": "pyannote",
+      "role": "parametres_plda"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/diarization/2f00fe9ca54a40a0bfbd192b3dbeecaf/segmentation/pytorch_model.bin",
+      "format": "bin",
+      "octets": 5906507,
+      "adaptateur": "pyannote",
+      "role": "composant"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/models--FermionResearch--Phonon-2/snapshots/3e6ab3a81d73b4d424ff34cc72535deb606378ef/phonon-2.bps.tar.zst",
+      "format": "bps.tar.zst",
+      "octets": 163515201,
+      "adaptateur": "phonon",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/models--FermionResearch--Phonon-2.5/snapshots/96dad4f3b5b784b1aa595213ea7481bf8a7addcd/phonon-2.5.fsq",
+      "format": "fsq",
+      "octets": 156181652,
+      "adaptateur": "phonon",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/nemotron/e6e24971bfb744b588f43c78f64d4885/Nemotron-3-Diarization.q8_0.gguf",
+      "format": "gguf",
+      "octets": 107012128,
+      "adaptateur": "nemotron_diarization",
+      "role": "checkpoint",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 360,
+        "architecture": "sortformer",
+        "nom": "Nemotron-3-Diarization.q8_0",
+        "type_quantification": 7
+      }
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/speech/FermionResearch__Phonon-2/model_phonon2_c4c_int6/model.fermion",
+      "format": "fermion",
+      "octets": 177438361,
+      "adaptateur": "phonon",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_Subtitle/data/models/speech/FermionResearch__Phonon-2.5/model_phonon25_f25x1_48k_int6/model.fermion",
+      "format": "fermion",
+      "octets": 177593644,
+      "adaptateur": "phonon",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_Subtitle/runtime/nemotron-research/downloads/Nemotron-3-Diarization.q8_0.gguf",
+      "format": "gguf",
+      "octets": 107012128,
+      "adaptateur": "nemotron_diarization",
+      "role": "copie_de_runtime_ou_de_recherche",
+      "entete_gguf": {
+        "version": 3,
+        "tenseurs": 360,
+        "architecture": "sortformer",
+        "nom": "Nemotron-3-Diarization.q8_0",
+        "type_quantification": 7
+      }
+    },
+    {
+      "chemin": "CyTools_VideoStudio/runtime/engines/stereo/data/models/depth-vda-small/video_depth_anything_vits.pth",
+      "format": "pth",
+      "octets": 116440756,
+      "adaptateur": "video_depth_anything",
+      "role": "copie_de_runtime_ou_de_recherche"
+    },
+    {
+      "chemin": "CyTools_VideoStudio/runtime/restoration-validation/006_colorCAR_DFWB_s126w7_SwinIR-M_jpeg10.pth",
+      "format": "pth",
+      "octets": 102873665,
+      "adaptateur": "swinir",
+      "role": "checkpoint_de_validation"
+    },
+    {
+      "chemin": "CyTools_VideoStudio/runtime/restoration-validation/realesr-general-x4v3.pth",
+      "format": "pth",
+      "octets": 4885111,
+      "adaptateur": "srvggnet",
+      "role": "checkpoint_de_validation"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/network/hmr2/configs/smpl_mean_params.npz",
+      "format": "npz",
+      "octets": 1310,
+      "adaptateur": "hmr2",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model/coco_aug_dict.pth",
+      "format": "pth",
+      "octets": 1759,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model/smpl_3dpw14_J_regressor_sparse.pt",
+      "format": "pt",
+      "octets": 2791,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model/smpl_coco17_J_regressor.pt",
+      "format": "pt",
+      "octets": 469227,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model/smpl_neutral_J_regressor.pt",
+      "format": "pt",
+      "octets": 662187,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model/smplx2smpl_sparse.pt",
+      "format": "pt",
+      "octets": 208935,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/hmr4d/utils/body_model/smplx_verts437.pt",
+      "format": "pt",
+      "octets": 4203,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/body_models/smplx/SMPLX_NEUTRAL.npz",
+      "format": "npz",
+      "octets": 108752058,
+      "adaptateur": "gvhmr",
+      "role": "ressource_geometrique"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/gvhmr/gvhmr_siga24_release.ckpt",
+      "format": "ckpt",
+      "octets": 163508011,
+      "adaptateur": "gvhmr",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/hmr2/epoch=10-step=25000.ckpt",
+      "format": "ckpt",
+      "octets": 2709494041,
+      "adaptateur": "hmr2",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/vitpose/vitpose-h-multi-coco.pth",
+      "format": "pth",
+      "octets": 2549075546,
+      "adaptateur": "vitpose",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/yolo/yolov8x.pt",
+      "format": "pt",
+      "octets": 136867539,
+      "adaptateur": "yolov8",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_VideoToStereo3D/data/models/depth-vda-small/video_depth_anything_vits.pth",
+      "format": "pth",
+      "octets": 116440756,
+      "adaptateur": "video_depth_anything",
+      "role": "checkpoint"
+    },
+    {
+      "chemin": "CyTools_VideoToStereo3D/data/models/upscale-realesrgan-x2plus/RealESRGAN_x2plus.pth",
+      "format": "pth",
+      "octets": 67061725,
+      "adaptateur": "realesrgan",
+      "role": "checkpoint"
+    }
+  ],
+  "catalogues_cytools": [
+    {
+      "chemin": "CyTools_AIChat/app/llm-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 15,
+      "entrees": [
+        {
+          "groupe": "models",
+          "id": "qwen3-4b",
+          "name": "Qwen3 4B (Q4_K_M)",
+          "repo": "Qwen/Qwen3-4B-GGUF",
+          "architecture": "qwen3",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3-8b",
+          "name": "Qwen3 8B (Q4_K_M)",
+          "repo": "Qwen/Qwen3-8B-GGUF",
+          "architecture": "qwen3",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen25-1_5b",
+          "name": "Qwen2.5 1.5B Instruct (Q8_0)",
+          "repo": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+          "architecture": "qwen2",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "llama32-3b",
+          "name": "Llama 3.2 3B Instruct (Q4_K_M)",
+          "repo": "bartowski/Llama-3.2-3B-Instruct-GGUF",
+          "architecture": "llama",
+          "license": "llama3.2"
+        },
+        {
+          "groupe": "models",
+          "id": "mistral-7b-v03",
+          "name": "Mistral 7B Instruct v0.3 (Q4_K_M)",
+          "repo": "bartowski/Mistral-7B-Instruct-v0.3-GGUF",
+          "architecture": "llama",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "hermes-3-3b",
+          "name": "Hermes 3 Llama 3.2 3B Q4_K_M",
+          "repo": "NousResearch/Hermes-3-Llama-3.2-3B-GGUF",
+          "architecture": "llama",
+          "license": "llama3"
+        },
+        {
+          "groupe": "models",
+          "id": "dolphin3-8b",
+          "name": "Dolphin 3.0 Llama 3.1 8B Q4_K_M",
+          "repo": "dphn/Dolphin3.0-Llama3.1-8B-GGUF",
+          "architecture": "llama",
+          "license": "llama3.1"
+        },
+        {
+          "groupe": "models",
+          "id": "self-after-dark",
+          "name": "Self After Dark 8B Q4_K_M",
+          "repo": "Gurubot/self-after-dark",
+          "architecture": "llama",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "gemma4-e4b",
+          "name": "Gemma 4 E4B HauhauCS Aggressive Q4_K_M",
+          "repo": "HauhauCS/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
+          "architecture": "gemma4",
+          "license": "gemma"
+        },
+        {
+          "groupe": "models",
+          "id": "gpt-oss-20b-heretic",
+          "name": "GPT-OSS 20B Heretic ARA v3 MXFP4",
+          "repo": "mradermacher/gpt-oss-20b-heretic-ara-v3-GGUF",
+          "architecture": "gpt-oss",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen36-12b-hightop",
+          "name": "Qwen 3.6 12B Hightop V2 Q4_K_M",
+          "repo": "hellork/Qwen3.6-12B-IQ-Ultra-Heretic-Uncensored-Thinking-V2-Hightop-Q4_K_M-GGUF",
+          "architecture": "qwen35",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen38-27b-coldfusion",
+          "name": "Qwen 3.8 27B Cold Fusion V1.1 IQ4_XS",
+          "repo": "DavidAU/Qwen3.8-27B-Cold-Fusion-GAIN-V1.1-NM-DAU-NEO-MAX-MTP-GGUF",
+          "architecture": "qwen35",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "nymphaea",
+          "name": "Nymphaea RP 4B Q4_K_M",
+          "repo": "mradermacher/Qwen3-4B-Nymphaea-RP-GGUF",
+          "architecture": "qwen3",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3-14b",
+          "name": "Qwen3 14B Q4_K_M",
+          "repo": "Qwen/Qwen3-14B-GGUF",
+          "architecture": "qwen3",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "loras",
+          "id": "lora-qwen25-abliterated",
+          "name": "Qwen2.5 1.5B abliterated (LoRA, F16)",
+          "repo": "ggml-org/LoRA-Qwen2.5-1.5B-Instruct-abliterated-F16-GGUF",
+          "architecture": "qwen2",
+          "license": "Not declared"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_AIChat/app/speech-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 6,
+      "entrees": [
+        {
+          "groupe": "stt",
+          "id": "parakeet-tdt-0.6b-v3",
+          "name": "Parakeet TDT 0.6B v3 (25 languages, French included)",
+          "repo": "nvidia/parakeet-tdt-0.6b-v3",
+          "format": "parakeet",
+          "license": "CC-BY-4.0"
+        },
+        {
+          "groupe": "stt",
+          "id": "phonon-2",
+          "name": "Phonon-2 (English, 164 MB)",
+          "repo": "FermionResearch/Phonon-2",
+          "format": "phonon",
+          "license": "CC-BY-4.0 (weights), Apache-2.0 (code)"
+        },
+        {
+          "groupe": "tts",
+          "id": "xtts-v2",
+          "name": "XTTS-v2 (17 languages, French included)",
+          "repo": "coqui/XTTS-v2",
+          "family": "xtts",
+          "license": "Coqui Public Model License 1.0.0 (non-commercial)"
+        },
+        {
+          "groupe": "tts",
+          "id": "f5-tts-french",
+          "name": "F5-TTS French (RASPIAUDIO, mixed speakers)",
+          "repo": "RASPIAUDIO/F5-French-MixedSpeakers-reduced",
+          "family": "f5",
+          "architecture": "F5TTS_Base",
+          "license": "CC-BY-NC-4.0 (non-commercial)"
+        },
+        {
+          "groupe": "tts",
+          "id": "f5-tts-v1-base",
+          "name": "F5-TTS v1 Base (English and Chinese)",
+          "repo": "SWivid/F5-TTS",
+          "family": "f5",
+          "architecture": "F5TTS_v1_Base",
+          "license": "CC-BY-NC-4.0 (non-commercial)"
+        },
+        {
+          "groupe": "tts",
+          "id": "vocos-mel-24khz",
+          "name": "Vocos 24 kHz vocoder (used by F5-TTS)",
+          "repo": "charactr/vocos-mel-24khz",
+          "family": "vocoder",
+          "license": "MIT"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_AudioLibrary/app/models/catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 11,
+      "entrees": [
+        {
+          "groupe": "modeles",
+          "modelId": "m2d-clap",
+          "family": "M2D-CLAP",
+          "engine": "torch",
+          "version": "2025",
+          "license": "NTT Software License (see LICENSE.pdf); research use terms apply"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "m2d-clap",
+          "family": "M2D-CLAP",
+          "engine": "torch",
+          "version": "2024",
+          "license": "NTT Software License (see LICENSE.pdf); research use terms apply"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "laion-clap",
+          "family": "CLAP",
+          "engine": "torch",
+          "version": "htsat-unfused",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "omni-embed-audio",
+          "family": "Omni-Embed-Audio",
+          "engine": "torch",
+          "version": "qwen3b-cl",
+          "license": "Checkpoint: mit; backbone Qwen/Qwen2.5-Omni-3B: qwen-research"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "omni-embed-audio",
+          "family": "Omni-Embed-Audio",
+          "engine": "torch",
+          "version": "qwen3b-ac",
+          "license": "Checkpoint: mit; backbone Qwen/Qwen2.5-Omni-3B: qwen-research"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "cytools-search-assist",
+          "family": "CySearchAssist",
+          "engine": "torch",
+          "version": "v1",
+          "license": "apache-2.0 (fine tune of Qwen/Qwen2.5-1.5B-Instruct; keep LICENSE and NOTICE)"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "cymetasound-search-assist-0.5b",
+          "family": "CySearchAssist",
+          "engine": "torch",
+          "version": "v1",
+          "license": "apache-2.0 (fine tune of Qwen/Qwen2.5-0.5B-Instruct; keep LICENSE and NOTICE)"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "qwen3-0.6b",
+          "family": "Qwen3",
+          "engine": "torch",
+          "version": "2025-04",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "qwen3-1.7b",
+          "family": "Qwen3",
+          "engine": "torch",
+          "version": "2025-04",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "qwen3-4b",
+          "family": "Qwen3",
+          "engine": "torch",
+          "version": "2025-04",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "modelId": "audio-flamingo-3",
+          "family": "Audio Flamingo",
+          "engine": "torch",
+          "version": "hf",
+          "license": "NVIDIA OneWay Noncommercial License (weights)"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_AudioStudio/app/models/catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 10,
+      "entrees": [
+        {
+          "groupe": "models",
+          "id": "audioldm-s-full-v2",
+          "name": "AudioLDM-S Full v2",
+          "family": "sfx",
+          "backend": "audioldm",
+          "license": "CC-BY-NC-SA-4.0"
+        },
+        {
+          "groupe": "models",
+          "id": "acestep-1.5",
+          "name": "ACE-Step 1.5",
+          "family": "music",
+          "backend": "acestep",
+          "license": "MIT"
+        },
+        {
+          "groupe": "models",
+          "id": "fishspeech-s2-pro",
+          "name": "Fish Speech S2 Pro",
+          "family": "voice",
+          "backend": "fishspeech",
+          "license": "Fish Audio Research License"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3tts-0.6B-Base",
+          "name": "Qwen3-TTS 12Hz 0.6B Base",
+          "family": "voice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3tts-0.6B-CustomVoice",
+          "name": "Qwen3-TTS 12Hz 0.6B CustomVoice",
+          "family": "voice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3tts-1.7B-Base",
+          "name": "Qwen3-TTS 12Hz 1.7B Base",
+          "family": "voice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3tts-1.7B-CustomVoice",
+          "name": "Qwen3-TTS 12Hz 1.7B CustomVoice",
+          "family": "voice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen3tts-1.7B-VoiceDesign",
+          "name": "Qwen3-TTS 12Hz 1.7B VoiceDesign",
+          "family": "voice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "llm-qwen3-1.7b",
+          "name": "Qwen3-1.7B (text annotation assistant)",
+          "family": "text",
+          "backend": "llm",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "whisper-large-v3-turbo",
+          "name": "Whisper large-v3 turbo (transcription)",
+          "family": "text",
+          "backend": "whisper",
+          "license": "MIT"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_AudioStudio/app/models/piper-voices.json",
+      "role": "profils_de_voix_piper",
+      "nombre_entrees": 177
+    },
+    {
+      "chemin": "CyTools_ComfyFlow/data/catalogs/model-list.json",
+      "role": "registre_amont_telechargeable",
+      "nombre_entrees": 562
+    },
+    {
+      "chemin": "CyTools_ImageStudio/app/model_catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 8,
+      "entrees": [
+        {
+          "groupe": "modeles",
+          "name": "JPEG artifacts · SwinIR ColorCAR q20",
+          "filename": "006_colorCAR_DFWB_s126w7_SwinIR-M_jpeg20.pth",
+          "license": "Apache-2.0 (project)"
+        },
+        {
+          "groupe": "modeles",
+          "name": "Super-resolution · Real-ESRGAN x4plus",
+          "filename": "RealESRGAN_x4plus.pth",
+          "license": "BSD-3-Clause (project)"
+        },
+        {
+          "groupe": "modeles",
+          "name": "Color detail cleanup · SwinIR Denoise 25",
+          "filename": "005_colorDN_DFWB_s128w8_SwinIR-M_noise25.pth",
+          "license": "Apache-2.0 (project)"
+        },
+        {
+          "groupe": "modeles",
+          "name": "Stable Diffusion 1.5",
+          "filename": "v1-5-pruned-emaonly.safetensors",
+          "license": "CreativeML Open RAIL-M"
+        },
+        {
+          "groupe": "modeles",
+          "name": "FLUX.1 Schnell · FP8",
+          "filename": "flux1-schnell-fp8.safetensors",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "name": "Qwen Image · diffusion FP8",
+          "filename": "qwen_image_fp8_e4m3fn.safetensors",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "name": "Qwen Image · encoder FP8",
+          "filename": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "name": "Qwen Image · VAE",
+          "filename": "qwen_image_vae.safetensors",
+          "license": "Apache-2.0"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_MeshStudio/app/models/catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 26,
+      "entrees": [
+        {
+          "groupe": "models",
+          "id": "birefnet-hr",
+          "name": "BiRefNet HR",
+          "family": "matting",
+          "engine": "trellis",
+          "purpose": "High resolution background removal before reconstruction.",
+          "license": "MIT (includes model Python code)"
+        },
+        {
+          "groupe": "models",
+          "id": "controlnet-zp12-normal-gen-v1",
+          "name": "Zero123++ normal ControlNet",
+          "family": "views",
+          "engine": "diffusion",
+          "purpose": "Optional normal map generation alongside the synthetic views.",
+          "license": "CC-BY-NC-4.0"
+        },
+        {
+          "groupe": "models",
+          "id": "depth-anything-v2-small",
+          "name": "Depth Anything V2 Small",
+          "family": "depth",
+          "engine": "diffusion",
+          "purpose": "Relative depth used to place and weight the views.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "dinov2-base",
+          "name": "DINOv2 ViT-B/14",
+          "family": "features",
+          "engine": "diffusion",
+          "purpose": "Identity and similarity scoring between real and generated views.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "dinov2-vitl14-reg",
+          "name": "DINOv2 ViT-L/14 with registers",
+          "family": "features",
+          "engine": "hi3dgen",
+          "purpose": "Image features TRELLIS v1 is conditioned on, read through the pinned checkout.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "dinov3-vitl16",
+          "name": "DINOv3 ViT-L/16",
+          "family": "features",
+          "engine": "trellis",
+          "purpose": "Image features for the TRELLIS.2 pipeline. Built with DINOv3.",
+          "license": "Meta DINOv3 License; personal acceptance required on the model page"
+        },
+        {
+          "groupe": "models",
+          "id": "hi3dgen-trellis-normal",
+          "name": "Hi3DGen normal-to-geometry model",
+          "family": "reconstruction",
+          "engine": "hi3dgen",
+          "purpose": "TRELLIS v1 retrained on normal maps: a normal map to a mesh (256 grid).",
+          "license": "MIT"
+        },
+        {
+          "groupe": "models",
+          "id": "localmesh-hf-modules",
+          "name": "Hugging Face dynamic modules cache",
+          "family": "support",
+          "engine": "trellis",
+          "purpose": "Remote code modules already downloaded for the engine.",
+          "license": "Belongs to the models it was generated from"
+        },
+        {
+          "groupe": "models",
+          "id": "localmesh-multivue",
+          "name": "LocalMesh multi-view camera stack",
+          "family": "reconstruction",
+          "engine": "trellis",
+          "purpose": "Camera estimation and vendored dependencies for the four-view mode.",
+          "license": "See the engine LICENSE and NOTICE"
+        },
+        {
+          "groupe": "models",
+          "id": "perspective-fields-paramnet-360cities",
+          "name": "PerspectiveFields ParamNet 360cities",
+          "family": "camera",
+          "engine": "diffusion",
+          "purpose": "Estimates the camera of each photograph (roll, pitch, field of view).",
+          "license": "Adobe Research License (non-commercial)"
+        },
+        {
+          "groupe": "models",
+          "id": "sam2.1-hiera-base-plus",
+          "name": "SAM 2.1 Hiera base+",
+          "family": "segmentation",
+          "engine": "diffusion",
+          "purpose": "Object segmentation, the faster of the two installed variants.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "sam2.1-hiera-large",
+          "name": "SAM 2.1 Hiera large",
+          "family": "segmentation",
+          "engine": "diffusion",
+          "purpose": "Object segmentation, the more accurate of the two installed variants.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "spar3d",
+          "name": "SPAR3D",
+          "family": "reconstruction",
+          "engine": "torch-cu124",
+          "purpose": "Image to a textured mesh and a point cloud, with editable backside inference.",
+          "license": "Stability AI Community License"
+        },
+        {
+          "groupe": "models",
+          "id": "spar3d-cache",
+          "name": "SPAR3D auxiliary models (DINOv2-L, Alpha-CLIP, transparent-background)",
+          "family": "support",
+          "engine": "torch-cu124",
+          "purpose": "Image backbone, region conditioning and matting used by SPAR3D.",
+          "license": "Apache-2.0 (DINOv2); Alpha-CLIP and transparent-background under their own terms"
+        },
+        {
+          "groupe": "models",
+          "id": "syncdreamer",
+          "name": "SyncDreamer",
+          "family": "views",
+          "engine": "legacy-cu121",
+          "purpose": "Alternative multi-view generator producing a consistent 16-view ring.",
+          "license": "MIT (code); weights under the upstream research terms"
+        },
+        {
+          "groupe": "models",
+          "id": "trellis-image-large",
+          "name": "TRELLIS-image-large (sparse decoder)",
+          "family": "reconstruction",
+          "engine": "trellis",
+          "purpose": "Sparse structure decoder used by the TRELLIS.2 pipeline.",
+          "license": "MIT"
+        },
+        {
+          "groupe": "models",
+          "id": "trellis2-4b",
+          "name": "TRELLIS.2-4B (FP8)",
+          "family": "reconstruction",
+          "engine": "trellis",
+          "purpose": "Photographs to a textured mesh: sparse structure, shape and texture flows.",
+          "license": "MIT (engine packaging); TRELLIS.2 weights under their upstream terms"
+        },
+        {
+          "groupe": "models",
+          "id": "trellis2-4b-reconviagen",
+          "name": "TRELLIS.2-4B pipeline description",
+          "family": "reconstruction",
+          "engine": "trellis",
+          "purpose": "Pipeline definition consumed by the engine.",
+          "license": "MIT"
+        },
+        {
+          "groupe": "models",
+          "id": "triposr",
+          "name": "TripoSR",
+          "family": "reconstruction",
+          "engine": "torch-cu124",
+          "purpose": "Single image to mesh in seconds, feed-forward NeRF plus marching cubes.",
+          "license": "MIT (code); weights under the Stability AI Community License"
+        },
+        {
+          "groupe": "models",
+          "id": "triposr-cache",
+          "name": "TripoSR auxiliary models (DINO ViT-B/16, U2Net)",
+          "family": "support",
+          "engine": "torch-cu124",
+          "purpose": "Image backbone and background removal used by TripoSR.",
+          "license": "Apache-2.0 (DINO); U2Net under Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "unirig",
+          "name": "UniRig Articulation-XL (skeleton and skin)",
+          "family": "rigging",
+          "engine": "torch-cu124",
+          "purpose": "Predicts a skeleton and skinning weights for a mesh.",
+          "license": "MIT (code); Articulation-XL weights under their own terms"
+        },
+        {
+          "groupe": "models",
+          "id": "wham",
+          "name": "WHAM checkpoints and the SMPL body model",
+          "family": "motion",
+          "engine": "wham",
+          "purpose": "Video to 3D human motion. The checkpoints and SMPL_NEUTRAL.pkl are downloaded after accepting their terms on the official pages; they are not installed here.",
+          "license": "CC-BY-NC-4.0 (WHAM); the SMPL body model has its own licence, accepted in person"
+        },
+        {
+          "groupe": "models",
+          "id": "wonder3d-v1.0",
+          "name": "Wonder3D v1.0",
+          "family": "views",
+          "engine": "legacy-cu121",
+          "purpose": "Alternative multi-view generator with normal maps.",
+          "license": "AGPL-3.0 (code); weights CC-BY-NC"
+        },
+        {
+          "groupe": "models",
+          "id": "yoso-normal-v1-8-1",
+          "name": "StableNormal YOSO normal estimator",
+          "family": "normals",
+          "engine": "hi3dgen",
+          "purpose": "One picture to a sharp normal map, the first stage of Hi3DGen.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "zero123plus-pipeline",
+          "name": "Zero123++ pipeline code",
+          "family": "views",
+          "engine": "diffusion",
+          "purpose": "Diffusers pipeline implementation loaded with the weights.",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "zero123plus-v1.2",
+          "name": "Zero123++ v1.2",
+          "family": "views",
+          "engine": "diffusion",
+          "purpose": "Six consistent synthetic views of an object from one reference image.",
+          "license": "CC-BY-NC-4.0 (weights); reference code Apache-2.0"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_PersonaRP/app/llm-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 13,
+      "entrees": [
+        {
+          "groupe": "modeles",
+          "id": "nymphaea",
+          "name": "Nymphaea RP 4B Q4_K_M",
+          "repo": "mradermacher/Qwen3-4B-Nymphaea-RP-GGUF",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3-8b",
+          "name": "Qwen3 8B Q4_K_M",
+          "repo": "Qwen/Qwen3-8B-GGUF",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3-14b",
+          "name": "Qwen3 14B Q4_K_M",
+          "repo": "Qwen/Qwen3-14B-GGUF",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "hermes-3-3b",
+          "name": "Hermes 3 Llama 3.2 3B Q4_K_M",
+          "repo": "NousResearch/Hermes-3-Llama-3.2-3B-GGUF",
+          "license": "llama3"
+        },
+        {
+          "groupe": "modeles",
+          "id": "dolphin3-8b",
+          "name": "Dolphin 3.0 Llama 3.1 8B Q4_K_M",
+          "repo": "dphn/Dolphin3.0-Llama3.1-8B-GGUF",
+          "license": "llama3.1"
+        },
+        {
+          "groupe": "modeles",
+          "id": "self-after-dark",
+          "name": "Self After Dark 8B Q4_K_M",
+          "repo": "Gurubot/self-after-dark",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "gemma4-e4b",
+          "name": "Gemma 4 E4B HauhauCS Aggressive Q4_K_M",
+          "repo": "HauhauCS/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
+          "license": "gemma"
+        },
+        {
+          "groupe": "modeles",
+          "id": "gpt-oss-20b-heretic",
+          "name": "GPT-OSS 20B Heretic ARA v3 MXFP4",
+          "repo": "mradermacher/gpt-oss-20b-heretic-ara-v3-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen36-12b-hightop",
+          "name": "Qwen 3.6 12B Hightop V2 Q4_K_M",
+          "repo": "hellork/Qwen3.6-12B-IQ-Ultra-Heretic-Uncensored-Thinking-V2-Hightop-Q4_K_M-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen38-27b-coldfusion",
+          "name": "Qwen 3.8 27B Cold Fusion V1.1 IQ4_XS",
+          "repo": "DavidAU/Qwen3.8-27B-Cold-Fusion-GAIN-V1.1-NM-DAU-NEO-MAX-MTP-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "darkidol-voice-coldfusion",
+          "name": "DarkIdol Voice on Qwen3.8 Cold Fusion 27B",
+          "repo": "Wiself/DarkIdol-Qwen3.8-27B-v1.1-Voice",
+          "license": "Apache-2.0; see source model terms"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen25-vl-7b",
+          "name": "Qwen2.5-VL 7B Instruct (vision)",
+          "repo": "ggml-org/Qwen2.5-VL-7B-Instruct-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "internvl3-8b",
+          "name": "InternVL3 8B Instruct (vision)",
+          "repo": "ggml-org/InternVL3-8B-Instruct-GGUF",
+          "license": "apache-2.0"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_PersonaRP/app/tts-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 6,
+      "entrees": [
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-0.6b-base",
+          "name": "Qwen3-TTS 0.6B Base",
+          "repo": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-0.6b-customvoice",
+          "name": "Qwen3-TTS 0.6B CustomVoice",
+          "repo": "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-1.7b-base",
+          "name": "Qwen3-TTS 1.7B Base",
+          "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-1.7b-customvoice",
+          "name": "Qwen3-TTS 1.7B CustomVoice",
+          "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-1.7b-voicedesign",
+          "name": "Qwen3-TTS 1.7B VoiceDesign",
+          "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "whisper-large-v3-turbo",
+          "name": "Whisper large-v3 turbo",
+          "repo": "openai/whisper-large-v3-turbo",
+          "backend": "whisper",
+          "license": "MIT"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 13,
+      "entrees": [
+        {
+          "groupe": "modeles",
+          "id": "nymphaea",
+          "name": "Nymphaea RP 4B Q4_K_M",
+          "repo": "mradermacher/Qwen3-4B-Nymphaea-RP-GGUF",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3-8b",
+          "name": "Qwen3 8B Q4_K_M",
+          "repo": "Qwen/Qwen3-8B-GGUF",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3-14b",
+          "name": "Qwen3 14B Q4_K_M",
+          "repo": "Qwen/Qwen3-14B-GGUF",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "hermes-3-3b",
+          "name": "Hermes 3 Llama 3.2 3B Q4_K_M",
+          "repo": "NousResearch/Hermes-3-Llama-3.2-3B-GGUF",
+          "license": "llama3"
+        },
+        {
+          "groupe": "modeles",
+          "id": "dolphin3-8b",
+          "name": "Dolphin 3.0 Llama 3.1 8B Q4_K_M",
+          "repo": "dphn/Dolphin3.0-Llama3.1-8B-GGUF",
+          "license": "llama3.1"
+        },
+        {
+          "groupe": "modeles",
+          "id": "self-after-dark",
+          "name": "Self After Dark 8B Q4_K_M",
+          "repo": "Gurubot/self-after-dark",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "gemma4-e4b",
+          "name": "Gemma 4 E4B HauhauCS Aggressive Q4_K_M",
+          "repo": "HauhauCS/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
+          "license": "gemma"
+        },
+        {
+          "groupe": "modeles",
+          "id": "gpt-oss-20b-heretic",
+          "name": "GPT-OSS 20B Heretic ARA v3 MXFP4",
+          "repo": "mradermacher/gpt-oss-20b-heretic-ara-v3-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen36-12b-hightop",
+          "name": "Qwen 3.6 12B Hightop V2 Q4_K_M",
+          "repo": "hellork/Qwen3.6-12B-IQ-Ultra-Heretic-Uncensored-Thinking-V2-Hightop-Q4_K_M-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen38-27b-coldfusion",
+          "name": "Qwen 3.8 27B Cold Fusion V1.1 IQ4_XS",
+          "repo": "DavidAU/Qwen3.8-27B-Cold-Fusion-GAIN-V1.1-NM-DAU-NEO-MAX-MTP-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "darkidol-voice-coldfusion",
+          "name": "DarkIdol Voice on Qwen3.8 Cold Fusion 27B",
+          "repo": "Wiself/DarkIdol-Qwen3.8-27B-v1.1-Voice",
+          "license": "Apache-2.0; see source model terms"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen25-vl-7b",
+          "name": "Qwen2.5-VL 7B Instruct (vision)",
+          "repo": "ggml-org/Qwen2.5-VL-7B-Instruct-GGUF",
+          "license": "apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "internvl3-8b",
+          "name": "InternVL3 8B Instruct (vision)",
+          "repo": "ggml-org/InternVL3-8B-Instruct-GGUF",
+          "license": "apache-2.0"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 6,
+      "entrees": [
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-0.6b-base",
+          "name": "Qwen3-TTS 0.6B Base",
+          "repo": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-0.6b-customvoice",
+          "name": "Qwen3-TTS 0.6B CustomVoice",
+          "repo": "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-1.7b-base",
+          "name": "Qwen3-TTS 1.7B Base",
+          "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-1.7b-customvoice",
+          "name": "Qwen3-TTS 1.7B CustomVoice",
+          "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "qwen3tts-1.7b-voicedesign",
+          "name": "Qwen3-TTS 1.7B VoiceDesign",
+          "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+          "backend": "qwen3tts",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "modeles",
+          "id": "whisper-large-v3-turbo",
+          "name": "Whisper large-v3 turbo",
+          "repo": "openai/whisper-large-v3-turbo",
+          "backend": "whisper",
+          "license": "MIT"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_Storyboard/app/models/catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 4,
+      "entrees": [
+        {
+          "groupe": "models",
+          "id": "qwen-image-2.1-int8",
+          "name": "Qwen-Image 2.1 (int8)",
+          "family": "image",
+          "backend": "comfyui",
+          "license": "Qwen Research License (non-commercial)"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen-image-2.1-controlnet-int8",
+          "name": "Qwen-Image 2.1 ControlNet (int8)",
+          "family": "image",
+          "backend": "comfyui",
+          "license": "Qwen Research License (non-commercial)"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen-image-edit-2511-int8",
+          "name": "Qwen-Image-Edit 2511 (int8)",
+          "family": "image",
+          "backend": "comfyui",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "models",
+          "id": "qwen-image-2512-fp8",
+          "name": "Qwen-Image 2512 (fp8)",
+          "family": "image",
+          "backend": "comfyui",
+          "license": "Apache-2.0"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_Subtitle/app/diarization-model-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 5,
+      "entrees": [
+        {
+          "groupe": "composants",
+          "path": "config.yaml"
+        },
+        {
+          "groupe": "composants",
+          "path": "embedding/pytorch_model.bin"
+        },
+        {
+          "groupe": "composants",
+          "path": "plda/plda.npz"
+        },
+        {
+          "groupe": "composants",
+          "path": "plda/xvec_transform.npz"
+        },
+        {
+          "groupe": "composants",
+          "path": "segmentation/pytorch_model.bin"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_Subtitle/app/model-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 3,
+      "entrees": [
+        {
+          "groupe": "profiles",
+          "id": "five-value",
+          "name": "Phonon-2",
+          "repo": "FermionResearch/Phonon-2",
+          "backend": "phonon2-five-value",
+          "filename": "phonon-2.fsq"
+        },
+        {
+          "groupe": "profiles",
+          "id": "five-value-25",
+          "name": "Phonon-2.5",
+          "repo": "FermionResearch/Phonon-2.5",
+          "backend": "phonon2-five-value",
+          "filename": "phonon-2.5.fsq"
+        },
+        {
+          "groupe": "profiles",
+          "id": "five-value-25-en",
+          "name": "Phonon-2.5 English",
+          "repo": "FermionResearch/Phonon-2.5-English",
+          "backend": "phonon2-five-value",
+          "filename": "phonon-2.5-en.fsq"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_Subtitle/app/nemotron-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 1,
+      "entrees": [
+        {
+          "groupe": "modele",
+          "id": "nvidia/Nemotron-3-Diarization",
+          "filename": "Nemotron-3-Diarization.q8_0.gguf",
+          "license": "OpenMDW-1.1"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/app/4danyone-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 14,
+      "entrees": [
+        {
+          "groupe": "models",
+          "file": "4danyone/model.safetensors"
+        },
+        {
+          "groupe": "models",
+          "file": "4danyone/smplx_to_goliath70.pt"
+        },
+        {
+          "groupe": "models",
+          "file": "4danyone/Wan2.2_VAE.pth"
+        },
+        {
+          "groupe": "models",
+          "file": "4danyone/prompt_context.safetensors"
+        },
+        {
+          "groupe": "models",
+          "file": "gvhmr/gvhmr_siga24_release.ckpt"
+        },
+        {
+          "groupe": "models",
+          "file": "gvhmr/epoch=10-step=25000.ckpt"
+        },
+        {
+          "groupe": "models",
+          "file": "gvhmr/vitpose-h-multi-coco.pth"
+        },
+        {
+          "groupe": "models",
+          "file": "gvhmr/yolov8x.pt"
+        },
+        {
+          "groupe": "models",
+          "file": "perceptual/imagenet-vgg-verydeep-19-conv.safetensors"
+        },
+        {
+          "groupe": "models",
+          "file": "4danyone/Wan22_TI2V_5B_Turbo_lora_rank_64_fp16.safetensors"
+        },
+        {
+          "groupe": "models",
+          "file": "BiRefNet_config.py"
+        },
+        {
+          "groupe": "models",
+          "file": "birefnet.py"
+        },
+        {
+          "groupe": "models",
+          "file": "config.json"
+        },
+        {
+          "groupe": "models",
+          "file": "model.safetensors"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_VideoToGaussian/app/sharp-catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 1,
+      "entrees": [
+        {
+          "groupe": "modele",
+          "license": "Apple ML Research Model License",
+          "name": "Apple SHARP",
+          "filename": "sharp_2572gikvuh.pt"
+        }
+      ]
+    },
+    {
+      "chemin": "CyTools_VideoToStereo3D/app/model_catalog.json",
+      "role": "catalogue_applicatif",
+      "nombre_entrees": 10,
+      "entrees": [
+        {
+          "groupe": "packs",
+          "id": "depth-vda-small",
+          "name": "Video Depth Anything - Small (ViT-S)",
+          "repo": "depth-anything/Video-Depth-Anything-Small",
+          "engine": "video-depth-anything",
+          "license": "Apache-2.0"
+        },
+        {
+          "groupe": "packs",
+          "id": "depth-vda-base",
+          "name": "Video Depth Anything - Base (ViT-B)",
+          "repo": "depth-anything/Video-Depth-Anything-Base",
+          "engine": "video-depth-anything",
+          "license": "CC-BY-NC-4.0"
+        },
+        {
+          "groupe": "packs",
+          "id": "depth-vda-large",
+          "name": "Video Depth Anything - Large (ViT-L)",
+          "repo": "depth-anything/Video-Depth-Anything-Large",
+          "engine": "video-depth-anything",
+          "license": "CC-BY-NC-4.0"
+        },
+        {
+          "groupe": "packs",
+          "id": "upscale-realesrgan-x4plus",
+          "name": "Real-ESRGAN x4plus (general photographic)",
+          "repo": "xinntao/Real-ESRGAN",
+          "architecture": "RRDBNet",
+          "engine": "real-esrgan",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "groupe": "packs",
+          "id": "upscale-realesrgan-x2plus",
+          "name": "Real-ESRGAN x2plus (general photographic)",
+          "repo": "xinntao/Real-ESRGAN",
+          "architecture": "RRDBNet",
+          "engine": "real-esrgan",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "groupe": "packs",
+          "id": "upscale-realesrgan-anime",
+          "name": "Real-ESRGAN x4plus anime 6B (drawn content)",
+          "repo": "xinntao/Real-ESRGAN",
+          "architecture": "RRDBNet",
+          "engine": "real-esrgan",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "groupe": "packs",
+          "id": "stereocrafter-inpainting",
+          "name": "StereoCrafter stereo video inpainting U-Net",
+          "repo": "TencentARC/StereoCrafter",
+          "engine": "stereocrafter",
+          "license": "No SPDX identifier is declared; the model card says \"other\" and the code repository carries License-Code.txt."
+        },
+        {
+          "groupe": "packs",
+          "id": "svd-img2vid-xt-1-1",
+          "name": "Stable Video Diffusion img2vid XT 1.1 (VAE and image encoder used by StereoCrafter)",
+          "repo": "stabilityai/stable-video-diffusion-img2vid-xt-1-1",
+          "engine": "stereocrafter",
+          "license": "Stability AI Non-Commercial Research Community License"
+        },
+        {
+          "groupe": "packs",
+          "id": "stereopilot",
+          "name": "StereoPilot feed-forward stereo conversion",
+          "repo": "KlingTeam/StereoPilot",
+          "engine": "stereopilot",
+          "license": "MIT"
+        },
+        {
+          "groupe": "packs",
+          "id": "wan21-t2v-1_3b",
+          "name": "Wan2.1 T2V 1.3B (base model used by StereoPilot)",
+          "repo": "Wan-AI/Wan2.1-T2V-1.3B",
+          "engine": "stereopilot",
+          "license": "Apache-2.0"
+        }
+      ]
+    }
+  ],
+  "workflows_comfyflow": {
+    "fichiers_examines": 15,
+    "fichiers_avec_poids": [
+      "CyTools_ComfyFlow/data/exports/extracted/ComfyUI_00557/workflow.json",
+      "CyTools_ComfyFlow/data/exports/extracted/ComfyUI_01760/workflow.json",
+      "CyTools_ComfyFlow/data/exports/extracted/From_png_real/workflow.json",
+      "CyTools_ComfyFlow/data/exports/sd15_fixture.cyflow/workflow.json",
+      "CyTools_ComfyFlow/data/workflows/comfyui_00557/prompt.json",
+      "CyTools_ComfyFlow/data/workflows/comfyui_00557/workflow.json",
+      "CyTools_ComfyFlow/data/workflows/comfyui_01760/prompt.json",
+      "CyTools_ComfyFlow/data/workflows/comfyui_01760/workflow.json",
+      "CyTools_ComfyFlow/data/workflows/from_png_real/prompt.json",
+      "CyTools_ComfyFlow/data/workflows/from_png_real/workflow.json",
+      "CyTools_ComfyFlow/data/workflows/instara_test/prompt.json",
+      "CyTools_ComfyFlow/data/workflows/instara_test/workflow.json",
+      "CyTools_ComfyFlow/data/workflows/sd15_fixture/prompt.json",
+      "CyTools_ComfyFlow/data/workflows/sd15_fixture/workflow.json",
+      "CyTools_ComfyFlow/data/workflows/wan_i2v_v11/workflow.json"
+    ],
+    "fichiers_de_poids_par_chargeur": {
+      "CLIPLoader": [
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+      ],
+      "CLIPLoaderGGUFMultiGPU": [
+        "t5/umt5-xxl-encoder-Q8_0.gguf"
+      ],
+      "CLIPVisionLoaderMultiGPU": [
+        "wan2/clip_vision_h_fp8_e4m3fn.safetensors"
+      ],
+      "CheckpointLoaderSimple": [
+        "cyberrealisticPony_v120.safetensors",
+        "v1-5-pruned-emaonly-fp16.safetensors"
+      ],
+      "LLMOptionalMemoryFreeAdvanced": [
+        "Qwen3-4B-abliterated.Q4_K_S.gguf"
+      ],
+      "UnetLoaderGGUF": [
+        "Wan2.2-T2V-A14B-HighNoise-Q8_0.gguf",
+        "Wan2.2-T2V-A14B-LowNoise-Q8_0.gguf"
+      ],
+      "UnetLoaderGGUFAdvancedDisTorchMultiGPU": [
+        "Wan2/wan2.2_i2v_high_noise_14B_Q4_K_S.gguf",
+        "Wan2/wan2.2_i2v_low_noise_14B_Q4_K_S.gguf"
+      ],
+      "UpscaleModelLoader": [
+        "4xNomos2_realplksr_dysample.pth"
+      ],
+      "VAELoader": [
+        "wan_2.1_vae.safetensors"
+      ],
+      "VAELoaderMultiGPU": [
+        "wan_2.1_vae_fp8_e4m3fn.safetensors"
+      ]
+    },
+    "nombre_lora_distinctes_par_chargeur": {
+      "LoraLoader": 9,
+      "LoraLoaderModelOnly": 3
+    }
+  },
+  "autres_sources_cytools": [
+    "CyTools_MiniMaxH3/app/README.md",
+    "CyTools_VideoToGaussian/app/c4g_backend.py",
+    "CyTools_VideoToGaussian/app/c4g_worker.py",
+    "CyTools_Storyboard/app/storyboard/comfy_image_workflow.py",
+    "CyTools_AIChat/app/aichat/vendor/cyai_connectors/registry.py",
+    "CyTools_VideoToGaussian/runtime/sources/4DAnyone/fdanyone/nerfstudio/splatfacto.py"
+  ]
+}

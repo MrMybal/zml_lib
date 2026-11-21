@@ -1,0 +1,64 @@
+module(name = "zml_lib")
+bazel_dep(name = "zml")
+bazel_dep(name = "rules_zig", version = "0.17.0")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "rules_cc", version = "0.2.25")
+bazel_dep(name = "rules_python", version = "1.9.0")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "llvm", version = "0.8.27")
+bazel_dep(name = "protobuf", version = "35.0", repo_name = "com_google_protobuf")
+local_path_override(module_name = "zml", path = "../zml_win")
+register_execution_platforms("@zml//platforms:local_execution_platform")
+register_toolchains("@zml//:translate_c_toolchain")
+
+llm_sources = use_extension("//:bazel/llm_sources.bzl", "llm_sources")
+use_repo(llm_sources, "zml_llm_sources")
+
+engine_deps = use_extension("@zml//:third_party/non_module_deps.bzl", "non_module_deps")
+sentencepiece_compat = use_extension("//:bazel/sentencepiece_external_absl.bzl", "sentencepiece_compat")
+use_repo(sentencepiece_compat, "sentencepiece_external_absl")
+override_repo(engine_deps, com_google_sentencepiece = "sentencepiece_external_absl")
+
+single_version_override(
+    module_name = "abseil-cpp",
+    patch_strip = 1,
+    patches = [
+        "//:bazel/patches/bmi2intrin.patch",
+    ],
+    version = "20260526.0",
+)
+
+single_version_override(
+    module_name = "rules_distroless",
+    patch_strip = 1,
+    patches = [
+        "//:bazel/patches/accept-nospace-version-constraints.patch",
+        "//:bazel/patches/flat-repositories.patch",
+    ],
+    version = "0.8.0",
+)
+
+archive_override(
+    module_name = "rules_zig",
+    integrity = "sha256-VbmdSIShN+sogoD3yI7yrvdZNXEf2a0MNLtxLAo1vDo=",
+    patch_strip = 1,
+    patches = ["//:bazel/patches/rules_zig-windows-triple.patch"],
+    strip_prefix = "rules_zig-fdad034e362e5de4190bd704cc8d17907117c57e",
+    urls = ["https://github.com/hermeticbuild/rules_zig/archive/fdad034e362e5de4190bd704cc8d17907117c57e.tar.gz"],
+)
+
+single_version_override(
+    module_name = "grpc",
+    patch_strip = 1,
+    patches = [
+        "//:bazel/patches/protobuf-35-upb-load.patch",
+        "//:bazel/patches/grpc++_unsecure-visibility.patch",
+        "//:bazel/patches/plugin-flags.patch",
+    ],
+    version = "1.80.0",
+)
+
+single_version_override(
+    module_name = "envoy_api",
+    version = "0.0.0-20250128-4de3c74",
+)

@@ -1,0 +1,12 @@
+{
+  "bibliotheque": "dinov2",
+  "etat": "valide_windows_cpu",
+  "dependances": [],
+  "checkpoints_comfyui": [
+    "depthanything/depth_anything_v2_vitl_fp16.safetensors"
+  ],
+  "interface": "Encodage image ViT-L/14 dans le checkpoint de profondeur. Sorties d'activations des blocs 4, 11, 17 et 23 avec le token de classe.",
+  "tenseurs": 343,
+  "validation": "Activations FP32 comparées à PyTorch sur cpu:0, aux résolutions 28 × 42 et 42 × 28. Écart absolu maximal de 7.867813110351562e-5.",
+  "reference": "https://github.com/DepthAnything/Depth-Anything-V2"
+}

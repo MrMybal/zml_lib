@@ -1,0 +1,45 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_zig//zig:defs.bzl", "zig_shared_library")
+
+zig_shared_library(
+    name = "zml_lib",
+    main = "src/c_api.zig",
+    srcs = ["src/smoke.zig"],
+    deps = [
+        ":c_exports",
+        "//libraries/mnist:model",
+        "//libraries/realesrgan:model",
+        "//runtime:runtime",
+        "@zml//zml/core",
+    ],
+)
+
+cc_library(
+    name = "c_exports",
+    additional_linker_inputs = select({
+        "@platforms//os:windows": ["src/zml_lib.def"],
+        "//conditions:default": [],
+    }),
+    linkopts = select({
+        "@platforms//os:windows": ["$(location src/zml_lib.def)"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "header",
+    hdrs = ["include/zml_lib.h"],
+    includes = ["include"],
+)
+
+cc_binary(
+    name = "zml_lib_cpp",
+    srcs = ["examples/cpp/main.cpp"],
+    deps = [":header", ":zml_lib"],
+)
+
+cc_binary(
+    name = "windows_consumer",
+    srcs = ["tests/windows/consumer.cpp"],
+    deps = [":header", ":zml_lib"],
+)

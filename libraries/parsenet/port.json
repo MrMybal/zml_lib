@@ -1,0 +1,13 @@
+{
+  "bibliotheque": "parsenet",
+  "etat": "valide_windows_cpu",
+  "dependances": [],
+  "checkpoints_comfyui": [
+    "facedetection/parsing_parsenet.pth"
+  ],
+  "interface": "Visage aligné 512×512. Sortie des logits de 19 classes puis masque composite selon FaceXLib.",
+  "validation": "Comparer les logits par classe et le masque alpha utilisé pour le collage du visage.",
+  "reference": "${COMFYUI_ROOT}/custom_nodes/facerestore_cf/facelib/parsing",
+  "tenseurs_fp32_inference": 202,
+  "resultats": "libraries/codeformer/README.md"
+}

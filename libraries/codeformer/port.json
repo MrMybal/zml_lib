@@ -1,0 +1,16 @@
+{
+  "bibliotheque": "codeformer",
+  "etat": "valide_windows_cpu",
+  "dependances": [
+    "retinaface",
+    "parsenet"
+  ],
+  "checkpoints_comfyui": [
+    "facerestore_models/codeformer.pth"
+  ],
+  "interface": "Visage aligné et réglage de fidélité w. Sortie visage restauré. La chaîne ComfyUI utilise RetinaFace et ParseNet.",
+  "validation": "Comparer indices du codebook et pixels à plusieurs valeurs de w, puis tester le recadrage et le collage sur plusieurs visages.",
+  "reference": "${COMFYUI_ROOT}/custom_nodes/facerestore_cf",
+  "tenseurs_fp32_inference": 515,
+  "resultats": "libraries/codeformer/README.md"
+}

@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    srcs = ["src/rrdbnet.zig"],
+    import_name = "zml_lib/realesrgan",
+    main = "src/runtime.zig",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+cc_library(
+    name = "image_codecs",
+    srcs = ["src/image_codecs.c"],
+    hdrs = ["third_party/stb_image.h", "third_party/stb_image_write.h"],
+    includes = ["."],
+)
+
+zig_binary(
+    name = "realesrgan_cli",
+    main = "src/cli.zig",
+    srcs = ["src/image.zig"],
+    deps = [":image_codecs", ":model", "//runtime:runtime", "@zml//zml/core"],
+)

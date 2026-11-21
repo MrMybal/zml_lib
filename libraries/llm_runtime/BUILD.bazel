@@ -1,0 +1,9 @@
+load("@rules_zig//zig:defs.bzl", "zig_library")
+
+zig_library(
+    name = "runner",
+    main = "runner.zig",
+    import_name = "zml_lib/llm_runtime",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//zml", "@zml_llm_sources//:models"],
+)
