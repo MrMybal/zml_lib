@@ -66,11 +66,11 @@
     },
     "adaptateurs_par_statut": {
       "porte": 8,
-      "valide_windows_cpu": 8,
+      "valide_windows_cpu": 9,
       "port_existant_a_etendre": 3,
       "a_porter": 48,
       "architecture_a_confirmer": 4,
-      "source_implemente": 2,
+      "source_implemente": 1,
       "integration_a_specifier": 1
     },
     "comfyui_fichiers_de_poids": 13,
@@ -978,7 +978,7 @@
       "id": "llama",
       "domaine": "Texte et multimodal",
       "dossier": "libraries/llama",
-      "statut": "source_implemente",
+      "statut": "valide_windows_cpu",
       "modeles": [
         "Llama 3.1 8B et 3.2 3B",
         "Dolphin3",
@@ -1004,7 +1004,7 @@
       ],
       "fichiers_de_modele_locaux": 1,
       "avancement": {
-        "etat": "Lanceur local SafeTensors et inspection du GGUF Dolphin 3. Analyse Bazel Windows, dépendances SentencePiece/SWIG compilées et référence PyTorch déterministe. Compilation complète et génération ZML à vérifier.",
+        "etat": "Binaire PE AMD64 et inférence Dolphin 3.0 Llama 3.1 8B validés sur cpu:0. GGUF local converti en FP16, trois tokens identiques à PyTorch sur chacun des deux prompts. Entrée texte et cache KV vérifiés séparément.",
         "documentation": "libraries/llama/README.md"
       }
     },
@@ -1101,7 +1101,7 @@
       ],
       "fichiers_de_modele_locaux": 0,
       "avancement": {
-        "etat": "Lanceur local SafeTensors pour les profils dense et MoE. Analyse Bazel Windows et compilation ciblée de SentencePiece/SWIG réussies. Build complet et génération avec poids locaux à vérifier.",
+        "etat": "Lanceur SafeTensors pour les profils dense et MoE compilé sous Windows, en-tête PE AMD64 vérifié. Inférence reportée en attendant les poids locaux.",
         "documentation": "libraries/qwen35/README.md"
       }
     },

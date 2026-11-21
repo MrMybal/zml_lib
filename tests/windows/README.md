@@ -19,6 +19,7 @@ Pour vérifier les fichiers distribuables dans un dossier autonome, copier l’e
     $dist = (New-Item -ItemType Directory -Force .\validation-output\windows-x64\bin).FullName
     $bin = '.\validation-output\bin'
     Copy-Item .\include\zml_lib.h, "$bin\zml_lib.dll", "$bin\windows_consumer.exe", "$bin\zml_lib_cpp.exe", "$bin\libraries\realesrgan\realesrgan_cli.exe" -Destination $dist
+    Copy-Item .\LICENSE -Destination "$dist\LICENSE-zml_lib.txt"
     Copy-Item .\libraries\realesrgan\third_party\LICENSE-*.txt -Destination $dist
     Copy-Item "$fork\LICENSE" -Destination "$dist\LICENSE-ZML.txt"
     $llvm = 'C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\Llvm\x64\bin'

@@ -6,11 +6,12 @@
 
 - Real-ESRGAN partage RRDBNet entre les variantes ×2, ×4 et anime, avec une ABI C et un CLI JSON.
 - La validation Windows sur CPU couvre SRVGGNet, SwinIR-M JPEG10, RealESRGAN_x2plus, Video Depth Anything Small et deux checkpoints Qwen à contexte court.
+- Dolphin 3.0 Llama 3.1 8B reproduit PyTorch sur CPU Windows pour deux prompts après conversion en FP16 des poids GGUF locaux.
 - AudioLDM-S Full v2 génère du son mono à partir de tokens et d’un latent initial. Son encodeur CLAP texte, son ordonnanceur DDIM, son UNet, son VAE et son vocodeur HiFi-GAN ont été comparés à la référence PyTorch locale.
 
 ## Limites connues
 
-- Llama et Qwen 3.5 attendent une compilation Windows complète et un test d’inférence.
+- Le lanceur Qwen 3.5 compile sous Windows. La validation de l’inférence attend les poids locaux.
 - SwinIR JPEG20 et ColorDN et les chaînes complètes de génération d’images et de vidéos figurent dans l’inventaire.
 - Les validations Windows sont détaillées par modèle et backend. La matrice de l’ABI de base comprend des essais GPU. Les résultats récents de restauration, de Qwen et d’AudioLDM concernent le CPU.
 

@@ -40,4 +40,4 @@ Le tokenizer du fork dépend de SentencePiece 0.2.1, SWIG 4.4.1 et PCRE2 10.45. 
 
 Les cibles Windows corrigent la résolution des en-têtes Abseil de SentencePiece et excluent deux en-têtes AVX512-BMM inutilisés par le tokenizer lors de la traduction C vers Zig. [Test Llama](../../libraries/llama/README.md) · [Cible Qwen 3.5](../../libraries/qwen35/README.md)
 
-L’analyse Bazel des deux cibles et la compilation ciblée des bibliothèques SentencePiece et SWIG ont réussi sur Windows x64. La compilation complète et l’exécution des deux lanceurs restent à valider.
+Les deux lanceurs compilent sous Windows et leurs en-têtes PE déclarent AMD64. Avec le GGUF local Dolphin 3.0 Llama 3.1 8B converti en SafeTensors FP16, Llama et PyTorch génèrent les mêmes trois tokens sur deux prompts sur `cpu:0`. Le test de l’entrée texte et celui du cache KV passent séparément. L’inférence Qwen 3.5 attend ses poids locaux.

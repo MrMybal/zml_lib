@@ -8,8 +8,9 @@ pub const Profile = enum { llama, qwen35 };
 pub fn run(comptime profile: Profile, init: std.process.Init) !void {
     const allocator = init.gpa;
     const args = try init.minimal.args.toSlice(init.arena.allocator());
-    if (args.len != 5) {
-        std.log.err("Usage: {s} cpu|cuda|rocm|vulkan MODEL_DIR SEQUENCE_LENGTH PROMPT", .{args[0]});
+    const token_ids = args.len > 4 and std.mem.eql(u8, args[4], "--token-ids");
+    if ((token_ids and args.len < 6) or (!token_ids and args.len != 5)) {
+        std.log.err("Usage: {s} cpu|cuda|rocm|vulkan MODEL_DIR SEQUENCE_LENGTH PROMPT | --token-ids ID...", .{args[0]});
         return error.InvalidArguments;
     }
     const backend = std.meta.stringToEnum(runtime.Backend, args[1]) orelse return error.InvalidBackend;
@@ -30,6 +31,21 @@ pub fn run(comptime profile: Profile, init: std.process.Init) !void {
 
     var registry = try zml.safetensors.TensorRegistry.fromRepo(allocator, init.io, dir);
     defer registry.deinit();
+    var tokens: std.ArrayList(u32) = .empty;
+    defer tokens.deinit(allocator);
+    if (token_ids) {
+        if (args.len - 5 >= limit) return error.InvalidPromptLength;
+        const embedding_name = switch (profile) {
+            .llama => "model.embed_tokens.weight",
+            .qwen35 => "model.language_model.embed_tokens.weight",
+        };
+        const embedding = registry.tensors.get(embedding_name) orelse return error.MissingTokenEmbedding;
+        for (args[5..]) |arg| {
+            const id = try std.fmt.parseInt(u32, arg, 10);
+            if (id >= embedding.shape.dim(0)) return error.InvalidTokenId;
+            try tokens.append(allocator, id);
+        }
+    }
     const backend_session = try runtime.Session.open(allocator, init.io, backend);
     defer backend_session.close();
     const platform = backend_session.platform;
@@ -54,17 +70,24 @@ pub fn run(comptime profile: Profile, init: std.process.Init) !void {
 
     var session = try compiled.newSession(allocator, init.io, platform, &buffers, tokenizer);
     defer session.deinit();
-    const prompt = try session.tokenizePrompt(allocator, args[4]);
-    defer allocator.free(prompt);
-    if (prompt.len == 0 or prompt.len >= limit) return error.InvalidPromptLength;
-    var tokens: std.ArrayList(u32) = .empty;
-    defer tokens.deinit(allocator);
-    try tokens.appendSlice(allocator, prompt);
+    if (!token_ids) {
+        const prompt = try session.tokenizePrompt(allocator, args[4]);
+        defer allocator.free(prompt);
+        if (prompt.len == 0 or prompt.len >= limit) return error.InvalidPromptLength;
+        try tokens.appendSlice(allocator, prompt);
+    }
+    const prompt_len = tokens.items.len;
     std.log.info("backend={s} pjrt={s} device={s}", .{ backend_session.target(), backend_session.pjrtPlatform(), platform.devices[0].debugString() });
     try session.runPrefill(tokens.items);
     var buffer: [4096]u8 = undefined;
     var stdout = std.Io.File.stdout().writerStreaming(init.io, &buffer);
-    try session.runDecode(&tokens, &stdout.interface);
+    if (token_ids) {
+        var discarded = std.Io.Writer.Discarding.init(&.{});
+        try session.runDecode(&tokens, &discarded.writer);
+        try std.json.Stringify.value(tokens.items[prompt_len..], .{}, &stdout.interface);
+    } else {
+        try session.runDecode(&tokens, &stdout.interface);
+    }
     try stdout.interface.writeByte('\n');
     try stdout.interface.flush();
 }

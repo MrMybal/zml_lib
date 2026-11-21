@@ -1,4 +1,16 @@
 load("@rules_zig//zig:defs.bzl", "zig_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# The standalone translator predates Clang 23 AVX512-BMM builtins.
+# Propagate the guards in CcInfo so they reach the translation action.
+cc_library(
+    name = "tokenizer_translation_defines",
+    defines = select({
+        "@platforms//os:windows": ["_AVX512BMMINTRIN_H", "__BMMVLINTRIN_H"],
+        "//conditions:default": [],
+    }),
+    visibility = ["//visibility:public"],
+)
 
 zig_library(
     name = "runner",

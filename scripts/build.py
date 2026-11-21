@@ -14,7 +14,7 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TEMP_ROOT = ROOT / "_Temp"
+TEMP_ROOT = Path(os.environ.get("ZML_TEMP_ROOT") or ROOT / "_Temp")
 BIN_DIR = ROOT / "validation-output" / "bin"
 LOCK = json.loads((ROOT / "zml.lock.json").read_text(encoding="utf-8"))
 TARGETS = ("//:zml_lib", "//:windows_consumer", "//:zml_lib_cpp", "//libraries/realesrgan:realesrgan_cli")
@@ -37,7 +37,7 @@ def check_engine(engine, env):
 
 @contextmanager
 def scratch_directory():
-    if TEMP_ROOT.drive.upper() == "C:" or TEMP_ROOT.resolve() != TEMP_ROOT:
+    if not TEMP_ROOT.is_absolute() or TEMP_ROOT.drive.upper() == "C:" or TEMP_ROOT.resolve() != TEMP_ROOT:
         raise SystemExit(f"Expected a real temporary directory outside C: at {TEMP_ROOT}")
     TEMP_ROOT.mkdir(exist_ok=True)
     scratch = Path(tempfile.mkdtemp(prefix="run-", dir=TEMP_ROOT))
@@ -87,6 +87,8 @@ def run_environment(scratch, tools):
         "TMP": temp.as_posix(),
         "TMPDIR": temp.as_posix(),
         "XDG_CACHE_HOME": (scratch / "xdg").as_posix(),
+        "HF_HOME": (scratch / "huggingface").as_posix(),
+        "TORCH_HOME": (scratch / "torch").as_posix(),
         "BAZELISK_HOME": (scratch / "bazelisk").as_posix(),
         "USE_BAZEL_VERSION": LOCK["bazel"],
         "RULES_ZIG_CACHE_PREFIX": zig_cache,

@@ -7,7 +7,7 @@
     </td>
     <td width="400" align="center" valign="middle"><strong>Zig · ZML</strong></td>
     <td width="300" align="right" valign="top">
-      <a href="#licence">Licences des composants</a><br>
+      <a href="LICENSE">Licence MIT</a><br>
       <a href="VERSION.fr.md">État des sources</a><br>
       <strong>Windows x64</strong>
     </td>
@@ -31,7 +31,7 @@ Exécutez des modèles d’IA en local en Zig avec ZML. Chaque bibliothèque fou
 | Texte et composants image | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP texte](libraries/clip/README.md), [TAEF1](libraries/taesd/README.md) |
 | Génération audio | [AudioLDM](libraries/audioldm/README.md), [CLAP texte](libraries/laion_clap/README.md), [HiFi-GAN](libraries/hifigan/README.md) |
 
-L’[inventaire des modèles](docs/model-adapters.json) recense les checkpoints, les dépendances et les portages restants. La compilation complète et l’inférence des lanceurs [Llama](libraries/llama/README.md) et [Qwen 3.5](libraries/qwen35/README.md) restent à valider.
+L’[inventaire des modèles](docs/model-adapters.json) recense les checkpoints, les dépendances et les portages restants. [Llama](libraries/llama/README.md) reproduit PyTorch sur CPU Windows avec le GGUF Dolphin 3 local converti en FP16. Le lanceur [Qwen 3.5](libraries/qwen35/README.md) compile sous Windows et attend un checkpoint local pour valider l’inférence.
 
 ## Intégration
 
@@ -51,7 +51,7 @@ Lancez cette commande depuis la racine du dépôt, avec `zml_win` dans un dossie
 python .\scripts\build.py --engine ..\zml_win -- --jobs=12
 ```
 
-Le script de compilation requiert un checkout sur un lecteur autre que `C:` et place les fichiers de travail de Bazel et Zig sous `_Temp`. Il supprime le dossier de l’exécution à la fin de la commande. Une compilation seule copie les binaires dans `validation-output\bin`. Avec `--then`, le script lance le test sur les binaires temporaires. La commande du test reçoit `ZML_BIN_DIR` et `ZML_TEST_DIR`. Le marqueur `{bin}` désigne le dossier des binaires.
+Le script de compilation place par défaut les fichiers de travail de Bazel et Zig sous `_Temp`. Définissez `ZML_TEMP_ROOT` sur un dossier absolu pour choisir un autre emplacement. Le dossier temporaire doit être sur un lecteur autre que `C:`. Le script supprime le dossier de l’exécution à la fin de la commande. Une compilation seule copie les binaires dans `validation-output\bin`. Avec `--then`, le script lance le test sur les binaires temporaires. La commande du test reçoit `ZML_BIN_DIR` et `ZML_TEST_DIR`. Le marqueur `{bin}` désigne le dossier des binaires.
 
 Le moteur accepte `cpu`, `cuda`, `rocm`, `vulkan` ou `auto`. Définissez `COMFYUI_ROOT` et `CYTOOLS_ROOT` sur les dossiers d’installation locaux avant de lancer les exemples de validation qui les utilisent. [Tests de l’ABI Windows](tests/windows/README.md) · [Tests de restauration](tests/windows/restoration.md) · [Tests de génération](tests/windows/generation-parts.md)
 
@@ -59,7 +59,7 @@ Le moteur accepte `cpu`, `cuda`, `rocm`, `vulkan` ou `auto`. Définissez `COMFYU
 
 ## Licence
 
-La licence générale du dépôt reste à définir. Les licences des composants et les conditions des checkpoints s’appliquent à leurs fichiers et poids respectifs.
+Le code original de zml_lib est sous [licence MIT](LICENSE). Les composants tiers et les poids des modèles conservent leurs conditions respectives.
 
 | Composant | Licence ou conditions | Périmètre |
 | --- | --- | --- |

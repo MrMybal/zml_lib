@@ -7,7 +7,7 @@
     </td>
     <td width="400" align="center" valign="middle"><strong>Zig · ZML</strong></td>
     <td width="300" align="right" valign="top">
-      <a href="#license">Component licenses</a><br>
+      <a href="LICENSE">MIT License</a><br>
       <a href="VERSION.md">Source status</a><br>
       <strong>Windows x64</strong>
     </td>
@@ -31,7 +31,7 @@ Run local AI models in Zig with ZML. Each library contains its model graph, a Ba
 | Text and image components | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP text](libraries/clip/README.md), [TAEF1](libraries/taesd/README.md) |
 | Audio generation | [AudioLDM](libraries/audioldm/README.md), [CLAP text](libraries/laion_clap/README.md), [HiFi-GAN](libraries/hifigan/README.md) |
 
-The [model inventory](docs/model-adapters.json) records checkpoints, dependencies, and remaining ports. The [Llama](libraries/llama/README.md) and [Qwen 3.5](libraries/qwen35/README.md) launchers still need full build and inference validation.
+The [model inventory](docs/model-adapters.json) records checkpoints, dependencies, and remaining ports. [Llama](libraries/llama/README.md) matched PyTorch on Windows CPU with the local Dolphin 3 GGUF converted to FP16. The [Qwen 3.5](libraries/qwen35/README.md) launcher builds on Windows and awaits a local checkpoint for inference validation.
 
 ## Integration
 
@@ -51,7 +51,7 @@ Run this command from the repository root with `zml_win` as a sibling checkout.
 python .\scripts\build.py --engine ..\zml_win -- --jobs=12
 ```
 
-The build script requires a checkout on a drive other than `C:` and places its Bazel and Zig work files under the repository's `_Temp` directory. It removes the per-run directory when the command ends. A build copies the resulting binaries to `validation-output\bin`. With `--then`, the script runs the test against the temporary binaries. Test commands receive `ZML_BIN_DIR` and `ZML_TEST_DIR`, and `{bin}` expands to the bin directory.
+The build script places its Bazel and Zig work files under the repository's `_Temp` directory by default. Set `ZML_TEMP_ROOT` to an absolute directory to use a separate location. The temporary directory must be on a drive other than `C:`. The script removes the per-run directory when the command ends. A build copies the resulting binaries to `validation-output\bin`. With `--then`, the script runs the test against the temporary binaries. Test commands receive `ZML_BIN_DIR` and `ZML_TEST_DIR`, and `{bin}` expands to the bin directory.
 
 The runtime accepts `cpu`, `cuda`, `rocm`, `vulkan`, or `auto`. Set `COMFYUI_ROOT` and `CYTOOLS_ROOT` to the local installation directories before running the validation examples that use them. [Windows ABI tests](tests/windows/README.md) · [Restoration tests](tests/windows/restoration.md) · [Generation tests](tests/windows/generation-parts.md)
 
@@ -59,7 +59,7 @@ The runtime accepts `cpu`, `cuda`, `rocm`, `vulkan`, or `auto`. Set `COMFYUI_ROO
 
 ## License
 
-The repository-wide license is pending. Component licenses and checkpoint terms apply to their respective files and weights.
+The original zml_lib code is available under the [MIT License](LICENSE). Third-party components and model checkpoints retain their own terms.
 
 | Component | License or terms | Scope |
 | --- | --- | --- |
