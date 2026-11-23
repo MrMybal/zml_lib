@@ -164,7 +164,7 @@ fn forward(parameters: []const Tensor, input: Tensor) Tensor {
             depth += 1;
         }
         if (i + 1 < widths.len) {
-            x = l.conv(w, l.name(&name, "down_blocks.{d}.downsamplers.0.conv", .{i}), x, 2, @splat(1), true);
+            x = l.conv3x3Stride2(w, l.name(&name, "down_blocks.{d}.downsamplers.0.conv", .{i}), x, true);
             skip[depth] = x;
             depth += 1;
         }

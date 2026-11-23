@@ -1,0 +1,39 @@
+{
+  "bibliotheque": "triposr",
+  "etat": "valide_windows_cuda",
+  "reference": "https://github.com/VAST-AI-Research/TripoSR",
+  "revision_reference": "107cefdc244c39106fa830359024f6a2f70871",
+  "licence_code_reference": "MIT",
+  "checkpoint": {
+    "source": "https://huggingface.co/stabilityai/TripoSR/tree/5b52193",
+    "fichier": "model.ckpt",
+    "tenseurs_fp32": 549,
+    "tenseurs_encodeur": 527,
+    "tenseurs_champ": 20,
+    "sha256_schema_utilise": "b8f2c5192603373d87bf6ee6459138b681f7a3c07a1d57ed4d95931e47d78d50"
+  },
+  "encodage": "DINO ViT-B/16 embarqué, interpolation des positions de Transformers 4.35.0",
+  "sortie": "PLY couleur binaire, sommets XYZ et RGB",
+  "validation": {
+    "profil": "synthétique FP32, Windows x64, cpu:0",
+    "erreur_absolue_max_triplans": 5.364418e-7,
+    "erreur_absolue_max_densite_rgb": 5.9604645e-8,
+    "sommets_ply": 4155,
+    "triangles_ply": 7752
+  },
+  "validation_cuda_officielle": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "image": "examples/chair.png",
+    "erreur_absolue_max_triplans": 0.0090332031,
+    "erreur_absolue_max_densite_rgb": 0.01965332,
+    "erreur_absolue_max_grille_densite": 0.0061035156,
+    "erreur_absolue_max_isosurface": 0.0010681152,
+    "erreur_absolue_max_couleurs_ply": 0.0019546747,
+    "sommets_ply": 252,
+    "triangles_ply": 488
+  },
+  "documentation": "libraries/triposr/README.md"
+}

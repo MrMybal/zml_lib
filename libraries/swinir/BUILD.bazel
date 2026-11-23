@@ -14,3 +14,9 @@ zig_binary(
     main = "probe.zig",
     deps = [":model", "//runtime:runtime"],
 )
+
+zig_binary(
+    name = "swinir_color_dn_probe",
+    main = "color_dn_probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)

@@ -1,4 +1,4 @@
-load("@rules_zig//zig:defs.bzl", "zig_library")
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
 
 zig_library(
     name = "model",
@@ -7,4 +7,10 @@ zig_library(
     import_name = "zml_lib/dinov2",
     visibility = ["//visibility:public"],
     deps = ["//runtime:runtime"],
+)
+
+zig_binary(
+    name = "dinov2_condition",
+    main = "condition_probe.zig",
+    deps = [":model", "//runtime:runtime", "@zml//zml/core"],
 )

@@ -1,0 +1,986 @@
+{
+  "bibliotheque": "gvhmr",
+  "etat": "valide_windows_cpu",
+  "profil": "SIGA24, réseau temporel",
+  "reference": "https://github.com/zju3dv/GVHMR",
+  "revision_reference": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+  "licence_code_reference": "https://github.com/zju3dv/GVHMR/blob/6ec3ca39336c50492c0fae65fba2fb831fc7d866/LICENSE",
+  "checkpoint": {
+    "fichier": "gvhmr_siga24_release.ckpt",
+    "sha256_local": "4fae7da2de388d5da3514cb27a2d003f364dacb280e9cf88972b710e589c6b91",
+    "tenseurs_fp32": 247
+  },
+  "validation": {
+    "profil": "checkpoint SIGA24 local, conditions synthétiques FP32, Windows x64, cpu:0",
+    "frames": [7, 137],
+    "erreur_absolue_max_pred_x": 6.4849854e-5,
+    "erreur_absolue_max_pred_cam": 5.9604645e-7,
+    "erreur_absolue_max_static_conf_logits": 1.2397766e-5
+  },
+  "validation_video": {
+    "source": "docs/example_video/tennis.mp4",
+    "images": 12,
+    "camera": "fixe",
+    "pretraitement": "PyTorch CUDA, NVIDIA GeForce RTX 3090",
+    "reseau_temporel": "ZML, Windows x64, cpu:0",
+    "sommets_par_image": 10475,
+    "triangles": 20908,
+    "erreur_absolue_max_sommets_monde": 1.341104507446289e-6,
+    "erreur_absolue_max_sommets_camera": 9.5367431640625e-7
+  },
+  "validation_video_cuda": {
+    "source": "docs/example_video/tennis.mp4",
+    "camera": "fixe",
+    "cadence_canonique_fps": 29.827092092209053,
+    "pretraitement": "YOLOv8, ViTPose et HMR2, PyTorch CUDA 2.8.0+cu128",
+    "reseau_temporel": "ZML FP32, Windows x64, iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "posttraitement_smplx": "CyTools sur l’hôte",
+    "inferences_par_chargement": 2,
+    "sommets_par_image": 10475,
+    "triangles": 20908,
+    "essais": [
+      {
+        "images_canoniques": 12,
+        "images_source_distinctes": 11,
+        "erreur_absolue_max_pred_x": 2.9802322387695312e-6,
+        "erreur_absolue_max_pred_cam": 8.195638656616211e-8,
+        "erreur_absolue_max_static_conf_logits": 1.71661376953125e-5,
+        "erreur_absolue_max_sommets_monde": 1.1622905731201172e-6,
+        "erreur_absolue_max_sommets_camera": 9.5367431640625e-7
+      },
+      {
+        "images_canoniques": 312,
+        "images_source_distinctes": 311,
+        "erreur_absolue_max_pred_x": 1.8835067749023438e-5,
+        "erreur_absolue_max_pred_cam": 2.384185791015625e-7,
+        "erreur_absolue_max_static_conf_logits": 3.147125244140625e-5,
+        "erreur_absolue_max_sommets_monde": 2.4065375328063965e-6,
+        "erreur_absolue_max_sommets_camera": 2.2351741790771484e-6
+      }
+    ]
+  },
+  "validation_video_cuda_mobile": {
+    "source": "sources/Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "camera": "mobile",
+    "odometrie": "SimpleVO SIFT, PyCOLMAP 3.12.6, hôte",
+    "pretraitement": "YOLOv8, ViTPose et HMR2, PyTorch CUDA 2.8.0+cu128",
+    "reseau_temporel": "ZML FP32, Windows x64, iree_cuda",
+    "zml_win_checkout": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "posttraitement_smplx": "CyTools sur l’hôte",
+    "inferences_par_chargement": 2,
+    "sommets_par_image": 10475,
+    "triangles": 20908,
+    "essais": [
+      {
+        "images_canoniques": 48,
+        "images_source_distinctes": 48,
+        "rotation_max_depuis_premiere_image_deg": 10.16012337622953,
+        "erreur_absolue_max_pred_x": 0.0000034570693969726562,
+        "erreur_absolue_max_pred_cam": 1.1920928955078125e-7,
+        "erreur_absolue_max_static_conf_logits": 0.00002288818359375,
+        "erreur_absolue_max_sommets_monde": 0.000018328428268432617,
+        "erreur_absolue_max_sommets_camera": 0.0000019073486328125
+      },
+      {
+        "images_canoniques": 195,
+        "images_source_distinctes": 195,
+        "rotation_max_depuis_premiere_image_deg": 24.326224822110053,
+        "erreur_absolue_max_pred_x": 0.0000045299530029296875,
+        "erreur_absolue_max_pred_cam": 1.1920928955078125e-7,
+        "erreur_absolue_max_static_conf_logits": 0.0000324249267578125,
+        "erreur_absolue_max_sommets_monde": 0.00010704994201660156,
+        "erreur_absolue_max_sommets_camera": 0.000002384185791015625
+      }
+    ],
+    "cadence_canonique_fps": 15
+  },
+  "validation_video_cuda_mobile_smplx_zml": {
+    "source": "sources/Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "checkpoint_smplx": "SMPLX_NEUTRAL.npz",
+    "cadence_canonique_fps": 15,
+    "odometrie": "SimpleVO SIFT, PyCOLMAP 3.12.6, hôte",
+    "reseau_temporel": "ZML FP32, Windows x64, iree_cuda",
+    "reconstruction_smplx": "ZML FP32, Windows x64, iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "zml_win_checkout": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "cible": "sm_86",
+    "inferences_temporelles_par_chargement": 2,
+    "repetitions_smplx_par_chargement": 2,
+    "taille_lot_smplx": 16,
+    "sommets_par_image": 10475,
+    "articulations_cinematiques": 55,
+    "triangles": 20908,
+    "essais": [
+      {
+        "images": 48,
+        "rotation_max_depuis_premiere_image_deg": 10.16012337622953,
+        "lots_smplx": 12,
+        "erreurs_absolues_max_chaine_complete": {
+          "pred_x": 0.0000034570693969726562,
+          "pred_cam": 1.1920928955078125e-7,
+          "static_conf_logits": 0.00002288818359375,
+          "global_vertices": 0.000018328428268432617,
+          "global_kinematic_joints": 0.000017151236534118652,
+          "incam_vertices": 0.0000019073486328125,
+          "incam_kinematic_joints": 0.000001430511474609375
+        },
+        "erreurs_absolues_max_smplx_memes_parametres": {
+          "global_vertices": 4.76837158203125e-7,
+          "global_kinematic_joints": 3.5762786865234375e-7,
+          "incam_vertices": 9.5367431640625e-7,
+          "incam_kinematic_joints": 4.76837158203125e-7
+        }
+      },
+      {
+        "images": 195,
+        "rotation_max_depuis_premiere_image_deg": 24.326224822110053,
+        "lots_smplx": 50,
+        "erreurs_absolues_max_chaine_complete": {
+          "pred_x": 0.0000045299530029296875,
+          "pred_cam": 1.1920928955078125e-7,
+          "static_conf_logits": 0.0000324249267578125,
+          "global_vertices": 0.00010704994201660156,
+          "global_kinematic_joints": 0.00010037422180175781,
+          "incam_vertices": 0.000002384185791015625,
+          "incam_kinematic_joints": 0.0000019073486328125
+        },
+        "erreurs_absolues_max_smplx_memes_parametres": {
+          "global_vertices": 5.960464477539062e-7,
+          "global_kinematic_joints": 4.76837158203125e-7,
+          "incam_vertices": 9.5367431640625e-7,
+          "incam_kinematic_joints": 7.152557373046875e-7
+        }
+      }
+    ]
+  },
+  "validation_cuda_corrections": {
+    "systeme": "Windows x64",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "cible": "sm_86",
+    "pilote": "610.47",
+    "zml_win_checkout": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "squelette": "SMPLX_NEUTRAL.npz, 22 articulations",
+    "contacts": 6,
+    "passes_ccd": 2,
+    "inferences_par_chargement": 2,
+    "essais_isoles": [
+      {
+        "cas": "moving1",
+        "images": 1,
+        "erreurs_absolues_max": {
+          "transl": 0,
+          "body_pose": 9.424984455108643e-7
+        },
+        "corrections_absolues_max": {
+          "transl": 0.3527262806892395,
+          "body_pose": 9.350478649139404e-7
+        }
+      },
+      {
+        "cas": "moving27",
+        "images": 27,
+        "erreurs_absolues_max": {
+          "transl": 2.384185791015625e-7,
+          "body_pose": 0.0000016987323760986328
+        },
+        "corrections_absolues_max": {
+          "transl": 1.0791295766830444,
+          "body_pose": 1.0211091041564941
+        }
+      },
+      {
+        "cas": "fixed27",
+        "images": 27,
+        "erreurs_absolues_max": {
+          "transl": 4.172325134277344e-7,
+          "body_pose": 0.000001341104507446289
+        },
+        "corrections_absolues_max": {
+          "transl": 0.7827130556106567,
+          "body_pose": 0.8550353050231934
+        }
+      }
+    ],
+    "essais_video": [
+      {
+        "camera": "moving",
+        "images_canoniques": 48,
+        "clip": "Tokyo-Walk_rgb.mp4",
+        "rotation_max_deg": 10.16012337622953,
+        "erreurs_absolues_max_corrections_memes_entrees": {
+          "transl": 2.384185791015625e-7,
+          "body_pose": 0.00000216066837310791
+        },
+        "corrections_absolues_max": {
+          "transl": 1.3285884857177734,
+          "body_pose": 0.041616395115852356
+        },
+        "erreurs_absolues_max_chaine_complete": {
+          "pred_x": 0.0000034570693969726562,
+          "pred_cam": 1.1920928955078125e-7,
+          "static_conf_logits": 0.00002288818359375,
+          "global_vertices": 0.00001817941665649414,
+          "global_kinematic_joints": 0.000016987323760986328,
+          "incam_vertices": 0.0000019073486328125,
+          "incam_kinematic_joints": 0.000001430511474609375
+        }
+      },
+      {
+        "camera": "moving",
+        "images_canoniques": 195,
+        "clip": "Tokyo-Walk_rgb.mp4",
+        "rotation_max_deg": 24.326224822110053,
+        "erreurs_absolues_max_corrections_memes_entrees": {
+          "transl": 0.000001430511474609375,
+          "body_pose": 0.00000476837158203125
+        },
+        "corrections_absolues_max": {
+          "transl": 1.3763275146484375,
+          "body_pose": 0.038749344646930695
+        },
+        "erreurs_absolues_max_chaine_complete": {
+          "pred_x": 0.0000045299530029296875,
+          "pred_cam": 1.1920928955078125e-7,
+          "static_conf_logits": 0.0000324249267578125,
+          "global_vertices": 0.0001068115234375,
+          "global_kinematic_joints": 0.00010037422180175781,
+          "incam_vertices": 0.000002384185791015625,
+          "incam_kinematic_joints": 0.0000019073486328125
+        }
+      },
+      {
+        "camera": "fixed",
+        "images_canoniques": 12,
+        "clip": "tennis.mp4",
+        "erreurs_absolues_max_corrections_memes_entrees": {
+          "transl": 1.1920928955078125e-7,
+          "body_pose": 8.493661880493164e-7
+        },
+        "corrections_absolues_max": {
+          "transl": 1.3450603485107422,
+          "body_pose": 0.051261819899082184
+        },
+        "erreurs_absolues_max_chaine_complete": {
+          "pred_x": 0.0000029802322387695312,
+          "pred_cam": 8.195638656616211e-8,
+          "static_conf_logits": 0.0000171661376953125,
+          "global_vertices": 0.0000014156103134155273,
+          "global_kinematic_joints": 0.00000130385160446167,
+          "incam_vertices": 9.5367431640625e-7,
+          "incam_kinematic_joints": 9.5367431640625e-7
+        }
+      }
+    ]
+  },
+  "validation_cuda_decode": {
+    "systeme": "Windows x64",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "zml_win_checkout": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "gvhmr_reference": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+    "statistiques": "MM_V1_AMASS_LOCAL_BEDLAM_CAM",
+    "canaux_mouvement": 151,
+    "inferences_par_chargement": 2,
+    "reference_validation": "PyTorch FP32, angle horizontal par atan2 et composition séquentielle",
+    "comparaison_amont": "Pipeline GVHMR épinglé, PyTorch FP32, angle horizontal par acos",
+    "essais_isoles": [
+      {
+        "cas": "single",
+        "images": 1,
+        "erreurs_absolues_max_reference_stabilisee": {
+          "body_pose_matrix": 4.768444341607392e-7,
+          "betas": 0,
+          "global_orient_matrix": 0,
+          "global_orient_gv_matrix": 0,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 1.1920928955078125e-7,
+          "transl_world": 0
+        },
+        "erreurs_absolues_max_reference_amont": {
+          "body_pose_matrix": 4.768444341607392e-7,
+          "betas": 0,
+          "global_orient_matrix": 0,
+          "global_orient_gv_matrix": 0,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 1.1920928955078125e-7,
+          "transl_world": 0
+        }
+      },
+      {
+        "cas": "fixed137",
+        "images": 137,
+        "erreurs_absolues_max_reference_stabilisee": {
+          "body_pose_matrix": 4.768444341607392e-7,
+          "betas": 0,
+          "global_orient_matrix": 5.960464477539063e-8,
+          "global_orient_gv_matrix": 1.7881393432617188e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 9.387731552124023e-7,
+          "transl_world": 2.384185791015625e-7
+        },
+        "erreurs_absolues_max_reference_amont": {
+          "body_pose_matrix": 4.768444341607392e-7,
+          "betas": 0,
+          "global_orient_matrix": 5.960464477539063e-8,
+          "global_orient_gv_matrix": 1.7881393432617188e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 9.387731552124023e-7,
+          "transl_world": 2.384185791015625e-7
+        }
+      },
+      {
+        "cas": "moving137",
+        "images": 137,
+        "erreurs_absolues_max_reference_stabilisee": {
+          "body_pose_matrix": 4.768444341607392e-7,
+          "betas": 0,
+          "global_orient_matrix": 5.960464477539063e-8,
+          "global_orient_gv_matrix": 1.7881393432617188e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 9.350478649139404e-7,
+          "transl_world": 0.0000011920928955078125
+        },
+        "erreurs_absolues_max_reference_amont": {
+          "body_pose_matrix": 4.768444341607392e-7,
+          "betas": 0,
+          "global_orient_matrix": 5.960464477539063e-8,
+          "global_orient_gv_matrix": 1.7881393432617188e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 0.00008134543895721436,
+          "transl_world": 0.0001938343048095703
+        }
+      }
+    ],
+    "essais_video": [
+      {
+        "camera": "moving",
+        "images_canoniques": 48,
+        "clip": "Tokyo-Walk_rgb.mp4",
+        "rotation_max_deg": 10.16012337622953,
+        "erreurs_absolues_max_decode_reference_stabilisee": {
+          "body_pose_matrix": 2.980232238769531e-7,
+          "betas": 0,
+          "global_orient_matrix": 7.133930921554565e-7,
+          "global_orient_gv_matrix": 4.76837158203125e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 8.493661880493164e-7,
+          "transl_world": 2.7939677238464355e-7
+        },
+        "erreurs_absolues_max_decode_reference_amont": {
+          "body_pose_matrix": 2.980232238769531e-7,
+          "betas": 0,
+          "global_orient_matrix": 7.133930921554565e-7,
+          "global_orient_gv_matrix": 4.76837158203125e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 0.0006865561008453369,
+          "transl_world": 0.00006771087646484375
+        },
+        "erreurs_absolues_max_chaine_reference_stabilisee": {
+          "pred_x": 0.0000034570693969726562,
+          "pred_cam": 1.1920928955078125e-7,
+          "static_conf_logits": 0.00002288818359375,
+          "global_vertices": 0.0000018477439880371094,
+          "global_kinematic_joints": 0.0000015497207641601562,
+          "incam_vertices": 0.0000019073486328125,
+          "incam_kinematic_joints": 0.000001430511474609375
+        },
+        "erreurs_absolues_max_maillage_reference_amont": {
+          "global_vertices": 0.0003648698329925537,
+          "global_kinematic_joints": 0.0003215670585632324,
+          "incam_vertices": 0.000021725893020629883,
+          "incam_kinematic_joints": 0.000016376376152038574
+        }
+      },
+      {
+        "camera": "moving",
+        "images_canoniques": 195,
+        "clip": "Tokyo-Walk_rgb.mp4",
+        "rotation_max_deg": 24.326224822110053,
+        "erreurs_absolues_max_decode_reference_stabilisee": {
+          "body_pose_matrix": 4.172325134277344e-7,
+          "betas": 0,
+          "global_orient_matrix": 9.51811671257019e-7,
+          "global_orient_gv_matrix": 7.152557373046875e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 0.000001781605533324182,
+          "transl_world": 9.5367431640625e-7
+        },
+        "erreurs_absolues_max_decode_reference_amont": {
+          "body_pose_matrix": 4.172325134277344e-7,
+          "betas": 0,
+          "global_orient_matrix": 9.51811671257019e-7,
+          "global_orient_gv_matrix": 7.152557373046875e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 0.0010334551334381104,
+          "transl_world": 0.0031778812408447266
+        },
+        "erreurs_absolues_max_chaine_reference_stabilisee": {
+          "pred_x": 0.0000045299530029296875,
+          "pred_cam": 1.1920928955078125e-7,
+          "static_conf_logits": 0.0000324249267578125,
+          "global_vertices": 0.00000667572021484375,
+          "global_kinematic_joints": 0.0000057220458984375,
+          "incam_vertices": 0.000002384185791015625,
+          "incam_kinematic_joints": 0.000002384185791015625
+        },
+        "erreurs_absolues_max_maillage_reference_amont": {
+          "global_vertices": 0.003081202507019043,
+          "global_kinematic_joints": 0.003075242042541504,
+          "incam_vertices": 0.000024378299713134766,
+          "incam_kinematic_joints": 0.0000165402889251709
+        }
+      },
+      {
+        "camera": "fixed",
+        "images_canoniques": 12,
+        "clip": "tennis.mp4",
+        "erreurs_absolues_max_decode_reference_stabilisee": {
+          "body_pose_matrix": 3.5762786865234375e-7,
+          "betas": 0,
+          "global_orient_matrix": 4.759058356285095e-7,
+          "global_orient_gv_matrix": 9.462237358093262e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 0.000001043081283569336,
+          "transl_world": 2.60770320892334e-8
+        },
+        "erreurs_absolues_max_decode_reference_amont": {
+          "body_pose_matrix": 3.5762786865234375e-7,
+          "betas": 0,
+          "global_orient_matrix": 4.759058356285095e-7,
+          "global_orient_gv_matrix": 9.462237358093262e-7,
+          "local_transl_vel": 0,
+          "transl_incam": 0,
+          "global_orient_world_matrix": 0.000001043081283569336,
+          "transl_world": 2.60770320892334e-8
+        },
+        "erreurs_absolues_max_chaine_reference_stabilisee": {
+          "pred_x": 0.0000029802322387695312,
+          "pred_cam": 8.195638656616211e-8,
+          "static_conf_logits": 0.0000171661376953125,
+          "global_vertices": 0.000002250075340270996,
+          "global_kinematic_joints": 0.0000021457672119140625,
+          "incam_vertices": 9.5367431640625e-7,
+          "incam_kinematic_joints": 9.5367431640625e-7
+        },
+        "erreurs_absolues_max_maillage_reference_amont": {
+          "global_vertices": 0.000002250075340270996,
+          "global_kinematic_joints": 0.0000021457672119140625,
+          "incam_vertices": 9.5367431640625e-7,
+          "incam_kinematic_joints": 9.5367431640625e-7
+        }
+      }
+    ]
+  },
+  "validation_cuda_simplevo": {
+    "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_code_zml": "0bb81d1957fb6438faddd1751566ad73eed97914",
+    "odometrie": "OpenCV SIFT et FLANN sur hôte, géométrie deux vues ZML FP64, trajectoire et signal caméra ZML FP32",
+    "reference_geometrie": "PyCOLMAP 3.12.6 sur les mêmes correspondances",
+    "reference_maillage": "PyTorch FP32 avec le même signal caméra ZML et le décodeur stabilisé",
+    "cas_synthetiques": [
+      {
+        "cas": "panoramic",
+        "correspondances_par_paire": 192,
+        "min_inliers": 162,
+        "erreur_angulaire_max_deg": 0.0010214014015721422
+      },
+      {
+        "cas": "essential",
+        "correspondances_par_paire": 192,
+        "min_inliers": 162,
+        "erreur_angulaire_max_deg": 0.07423880914341625,
+        "cosinus_min_direction_translation": 0.9999780850467715
+      }
+    ],
+    "source_video": "Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "resultats": [
+      {
+        "images": 48,
+        "fps": 15,
+        "paires": 6,
+        "homographies": 6,
+        "min_inliers": 1311,
+        "rotation_camera_max_deg": 10.055415433453117,
+        "ecarts_trajectoire_a_poses_identiques": {
+          "rotation": 1.6750348826033434e-7,
+          "translation": 6.413897801760271e-9,
+          "angular": 1.6286438446521181e-7
+        },
+        "ecarts_angulaires_trajectoire_pycolmap_deg": {
+          "max": 0.6964447755777348,
+          "rms": 0.44420297423739014
+        },
+        "ecarts_angulaires_relatifs_pycolmap_deg": {
+          "max": 0.567766340036304,
+          "rms": 0.3270076919635099
+        },
+        "ecart_max_sommets_monde": 0.0000017881393432617188,
+        "ecart_max_sommets_camera": 0.000002384185791015625,
+        "sommets_par_image": 10475,
+        "triangles": 20908,
+        "sorties_odometrie_cuda": 14
+      },
+      {
+        "images": 195,
+        "fps": 15,
+        "paires": 25,
+        "homographies": 25,
+        "min_inliers": 1071,
+        "rotation_camera_max_deg": 25.260614557214055,
+        "ecarts_trajectoire_a_poses_identiques": {
+          "rotation": 2.438863168363614e-7,
+          "translation": 6.98934238818616e-8,
+          "angular": 3.102774741581271e-7
+        },
+        "ecarts_angulaires_trajectoire_pycolmap_deg": {
+          "max": 3.235703419691229,
+          "rms": 1.7799218250414468
+        },
+        "ecarts_angulaires_relatifs_pycolmap_deg": {
+          "max": 2.051912376753055,
+          "rms": 0.9384991116306175
+        },
+        "ecart_max_sommets_monde": 0.00001239776611328125,
+        "ecart_max_sommets_camera": 0.000002384185791015625,
+        "sommets_par_image": 10475,
+        "triangles": 20908,
+        "sorties_odometrie_cuda": 52
+      }
+    ]
+  },
+  "validation_cuda_sift": {
+    "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_code_zml": "0bb81d1957fb6438faddd1751566ad73eed97914",
+    "precision": "SIFT et appariement FP32",
+    "appariement": "Deux plus proches voisins exacts avec seuil de Lowe de 0,7",
+    "reference_geometrie": "PyCOLMAP 3.12.6 sur les correspondances ZML et pipeline amont OpenCV/FLANN/PyCOLMAP sur les mêmes images",
+    "reference_maillage": "PyTorch FP32 avec le même signal caméra ZML et le décodeur stabilisé",
+    "controle_synthetique": {
+      "descripteurs_par_image": [
+        803,
+        1014,
+        935,
+        0
+      ],
+      "correspondances_controlees_scipy": 975,
+      "sorties_sift_cuda": 262,
+      "resultats": [
+        {
+          "transformation": "translation sous-pixel",
+          "correspondances": 444,
+          "fraction_a_moins_de_2_pixels": 0.990990990990991,
+          "erreur_mediane_pixels": 0.12088551817913565,
+          "erreur_mediane_opencv_pixels": 0.1131451558452766
+        },
+        {
+          "transformation": "rotation de 18° et facteur d’échelle 1,09",
+          "correspondances": 531,
+          "fraction_a_moins_de_2_pixels": 0.9887005649717514,
+          "erreur_mediane_pixels": 0.1791275485313058,
+          "erreur_mediane_opencv_pixels": 0.17617196964526352
+        }
+      ]
+    },
+    "source_video": "Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "resultats": [
+      {
+        "images": 48,
+        "fps": 15,
+        "paires": 6,
+        "correspondances_zml": 8676,
+        "correspondances_opencv": 8766,
+        "min_correspondances_zml_par_paire": 1384,
+        "min_inliers_odometrie_par_paire": 1291,
+        "sorties_sift_cuda": 544,
+        "sorties_odometrie_cuda": 14,
+        "ecart_trajectoire_pycolmap_memes_correspondances_deg": {
+          "max_deg": 2.5113494374919654,
+          "rms_deg": 1.1121879127965288
+        },
+        "ecart_pose_relative_pycolmap_memes_correspondances_deg": {
+          "max_deg": 2.341979244844076,
+          "rms_deg": 1.0395192785815035
+        },
+        "ecart_trajectoire_opencv_pycolmap_deg": {
+          "max_deg": 3.1268913791116213,
+          "rms_deg": 1.3614599283845297
+        },
+        "rotation_camera_max_deg": 9.822617354779934,
+        "ecart_max_sommets_monde": 0.0000021457672119140625,
+        "ecart_max_sommets_camera": 0.0000019073486328125,
+        "sommets_par_image": 10475,
+        "triangles": 20908
+      },
+      {
+        "images": 195,
+        "fps": 15,
+        "paires": 25,
+        "correspondances_zml": 34100,
+        "correspondances_opencv": 34547,
+        "min_correspondances_zml_par_paire": 1150,
+        "min_inliers_odometrie_par_paire": 1049,
+        "sorties_sift_cuda": 2026,
+        "sorties_odometrie_cuda": 52,
+        "ecart_trajectoire_pycolmap_memes_correspondances_deg": {
+          "max_deg": 6.918653252592899,
+          "rms_deg": 4.447811127543869
+        },
+        "ecart_pose_relative_pycolmap_memes_correspondances_deg": {
+          "max_deg": 2.341979244844076,
+          "rms_deg": 0.9848571861043135
+        },
+        "ecart_trajectoire_opencv_pycolmap_deg": {
+          "max_deg": 13.590455901194638,
+          "rms_deg": 8.312896707362786
+        },
+        "rotation_camera_max_deg": 28.036838591929914,
+        "ecart_max_sommets_monde": 0.0000095367431640625,
+        "ecart_max_sommets_camera": 0.000002384185791015625,
+        "sommets_par_image": 10475,
+        "triangles": 20908
+      }
+    ]
+  },
+  "validation_cuda_simplevo_refinement": {
+    "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_code_zml": "0bb81d1957fb6438faddd1751566ad73eed97914",
+    "source_video": "Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "checkpoint": "Poids locaux CyTools",
+    "images": 195,
+    "fps": 15,
+    "paires": 25,
+    "homographies": 25,
+    "correspondances_zml": 34100,
+    "correspondances_opencv": 34547,
+    "min_inliers_homographie": 1062,
+    "graine_reference": 0,
+    "version_pycolmap": "3.12.6",
+    "homographie": {
+      "hypotheses": 128,
+      "groupes": 4,
+      "iterations_raffinement": 8,
+      "chiralite": "Consensus propre à l’homographie"
+    },
+    "ecart_max_historique_trajectoire_opencv_pycolmap_deg": 13.590455901194638,
+    "ecart_max_entre_rejeux_pycolmap_sans_reinitialisation_deg": 9.318620333578993,
+    "ecart_trajectoire_opencv_pycolmap_deg": {
+      "avant": {
+        "max_deg": 6.143604039088133,
+        "rms_deg": 3.8012479813230557
+      },
+      "apres": {
+        "max_deg": 2.8956091170317615,
+        "rms_deg": 1.979916548422058
+      }
+    },
+    "ecart_trajectoire_pycolmap_memes_correspondances_deg": {
+      "avant": {
+        "max_deg": 6.91865371474501,
+        "rms_deg": 4.44780226492043
+      },
+      "apres": {
+        "max_deg": 2.7098713203756226,
+        "rms_deg": 1.5947564976802144
+      }
+    },
+    "ecart_signal_6d_a_poses_identiques": 2.515322868879011e-7,
+    "ecart_max_sommets_monde_pytorch_meme_signal": 0.00001430511474609375,
+    "ecart_max_sommets_camera_pytorch_meme_signal": 0.000002384185791015625,
+    "sommets_par_image": 10475,
+    "triangles": 20908,
+    "sorties_cuda_controlees": 2134,
+    "tests_geometrie_connue": {
+      "panoramic_max_deg": 0.0010214014015721422,
+      "essential_max_deg": 0.07423880914341625
+    }
+  },
+  "validation_cuda_pretraitement": {
+    "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_gvhmr": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+    "source_video": "Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "images": 195,
+    "fps": 15,
+    "repetitions": 2,
+    "sorties_cuda_controlees": 2720,
+    "yolov8x": {
+      "sorties_cuda": 390,
+      "images_avec_piste": 195,
+      "ecart_max_xywh_pixels_reseau": 0.0076904296875,
+      "ecart_max_score": 0.0001043081283569336
+    },
+    "vitpose": {
+      "sorties_cuda": 98,
+      "ecart_max_cartes": 0.0000019073486328125,
+      "ecart_max_articulations_pixels": 0.0001220703125
+    },
+    "hmr2": {
+      "sorties_cuda": 98,
+      "ecart_max_jetons": 0.000003546476364135742
+    },
+    "ecart_trajectoire_opencv_pycolmap_deg": {
+      "max_deg": 2.8956091170317615,
+      "rms_deg": 1.979916548422058
+    },
+    "sommets_par_image": 10475,
+    "triangles": 20908,
+    "ecart_max_sommets_monde_pytorch_stabilise": 0.0000095367431640625,
+    "ecart_max_sommets_monde_gvhmr_amont": 0.005357503890991211
+  },
+  "validation_cuda_udp": {
+    "images": 195,
+    "articulations_visibles": 3315,
+    "sorties_cuda_vitpose_udp": 98,
+    "ecart_max_pixels_memes_cartes": 0.0001220703125,
+    "ecart_max_pixels_vitpose_pytorch": 0.0001220703125,
+    "scores_identiques_sur_memes_cartes": true,
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "sorties_cuda_chaine": 2720,
+    "ecart_trajectoire_opencv_pycolmap_deg": {
+      "max_deg": 2.8956091170317615,
+      "rms_deg": 1.979916548422058
+    },
+    "ecart_max_sommets_monde_pytorch_stabilise": 0.000010967254638671875,
+    "ecart_max_sommets_monde_gvhmr_amont": 0.005922794342041016
+  },
+  "validation_cuda_recadrage": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_gvhmr": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+    "opencv": "4.14.0",
+    "source_video": "Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+    "images": 195,
+    "fps": 15,
+    "rgb_decode_hw": [
+      360,
+      640
+    ],
+    "sortie_nchw": [
+      195,
+      3,
+      256,
+      192
+    ],
+    "lot": 4,
+    "repetitions": 2,
+    "sorties_cuda_recadrage": 98,
+    "images_filtrees": 0,
+    "ecart_max_recadrages_fp32": 0,
+    "ecart_max_articulations_pixels": 0.0001220703125,
+    "ecart_max_jetons_hmr2": 0.000003546476364135742,
+    "sorties_cuda_chaine": 2818,
+    "sommets_par_image": 10475,
+    "triangles": 20908,
+    "ecart_max_sommets_monde_pytorch_stabilise": 0.000010967254638671875,
+    "ecart_max_sommets_monde_gvhmr_amont": 0.005922794342041016,
+    "cas_isoles": {
+      "unfiltered": {
+        "frames": 5,
+        "dispatches": 4,
+        "antialiased": 0,
+        "max_abs_normalized_error": 0
+      },
+      "mixed": {
+        "frames": 9,
+        "dispatches": 6,
+        "antialiased": 3,
+        "max_abs_normalized_error": 0
+      },
+      "narrow": {
+        "frames": 1,
+        "dispatches": 2,
+        "antialiased": 1,
+        "max_abs_normalized_error": 0
+      }
+    }
+  },
+  "validation_cuda_demi_resolution": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_gvhmr": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+    "reference": {
+      "pyav": "16.1.0",
+      "imageio": "2.37.4",
+      "libswscale": "9.1.100",
+      "filtre": "scale=iw*0.5:ih*0.5"
+    },
+    "video": {
+      "source": "Video-Depth-Anything/assets/example_videos/Tokyo-Walk_rgb.mp4",
+      "poids": "CyTools",
+      "camera": "mobile",
+      "images": 195,
+      "fps": 15,
+      "entree_hw": [720, 1280],
+      "sortie_hw": [360, 640],
+      "valeurs_rgb": 134784000,
+      "ecart_max_rgb8": 0,
+      "ecart_max_recadrages_fp32": 0,
+      "images_antialias": 0,
+      "repetitions": 2,
+      "lots_executes_reduction_recadrage": 98,
+      "sorties_rgb8_controlees": 98,
+      "sorties_recadrage_controlees": 98,
+      "sorties_cuda_chaine": 2916,
+      "ecart_trajectoire_opencv_pycolmap_deg": {
+        "max_deg": 2.8956091170317615,
+        "rms_deg": 1.979916548422058
+      },
+      "sommets_par_image": 10475,
+      "triangles": 20908,
+      "ecart_max_sommets_monde_pytorch_stabilise": 0.000010967254638671875,
+      "ecart_max_sommets_monde_gvhmr_amont": 0.005922794342041016
+    },
+    "cas_isoles": {
+      "video_size": {
+        "images": 5,
+        "entree_hw": [720, 1280],
+        "sortie_hwc": [360, 640, 3],
+        "lots_executes": 4,
+        "valeurs_rgb": 3456000,
+        "ecart_max_rgb8": 0,
+        "ecart_max_recadrages_fp32": 0,
+        "images_antialias": 0
+      },
+      "odd": {
+        "images": 3,
+        "entree_hw": [47, 73],
+        "sortie_hwc": [23, 36, 3],
+        "lots_executes": 2,
+        "valeurs_rgb": 7452,
+        "ecart_max_rgb8": 0,
+        "ecart_max_recadrages_fp32": 0,
+        "images_antialias": 1,
+        "recadrages_identiques_sans_sortie_rgb8": true
+      },
+      "narrow": {
+        "images": 1,
+        "entree_hw": [1, 7],
+        "sortie_hwc": [1, 3, 3],
+        "lots_executes": 2,
+        "valeurs_rgb": 9,
+        "ecart_max_rgb8": 0,
+        "ecart_max_recadrages_fp32": 0,
+        "images_antialias": 0
+      }
+    }
+  },
+  "validation_cuda_simplevo_demi_resolution": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "revision_gvhmr": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+    "video": {
+      "source": "Tokyo-Walk_rgb.mp4, copie locale de CyTools VideoStudio",
+      "commande": "libraries/gvhmr/validate_sift.py --video",
+      "images": 195,
+      "fps": 15,
+      "images_cles": 26,
+      "entree_hw": [720, 1280],
+      "sortie_hw": [360, 640],
+      "pyav": "18.1.0",
+      "libswscale": "9.5.102",
+      "valeurs_rgb": 17971200,
+      "ecart_max_rgb8": 0,
+      "descripteurs_identiques": true,
+      "correspondances_identiques": true,
+      "correspondances": 34100,
+      "paires": 25,
+      "homographies": 25,
+      "minimum_inliers": 1062,
+      "repetitions": 2,
+      "sorties_reduction_controlees": 52,
+      "sorties_sift_controlees": 2026,
+      "sorties_geometrie_controlees": 52,
+      "ecart_max_trajectoire_scipy_meme_geometrie": {
+        "rotation": 2.048728483527995e-7,
+        "translation": 5.7780522255690414e-8,
+        "angulaire_6d": 2.5170260709028724e-7
+      },
+      "rejeu_smplx": "Interrompu pendant la comparaison HMR2 après la disparition du runtime CyTools VideoToGaussian."
+    },
+    "cas_isoles": {
+      "pair": {
+        "images": 4,
+        "entree_hw": [256, 320],
+        "sortie_hw": [128, 160],
+        "valeurs_rgb": 245760,
+        "ecart_max_rgb8": 0,
+        "sorties_reduction_controlees": 8,
+        "descripteurs_identiques": true,
+        "correspondances_identiques": true,
+        "correspondances_par_paire": [144, 117, 0]
+      },
+      "impair": {
+        "images": 4,
+        "entree_hw": [255, 319],
+        "sortie_hw": [127, 159],
+        "valeurs_rgb": 242316,
+        "ecart_max_rgb8": 0,
+        "sorties_reduction_controlees": 8,
+        "descripteurs_identiques": true,
+        "correspondances_identiques": true,
+        "correspondances_identiques_sans_copie_rgb8": true,
+        "correspondances_par_paire": [136, 119, 0]
+      }
+    }
+  },
+  "validation_cuda_conditions": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "reference": "PyTorch FP32, données synthétiques et formules GVHMR",
+    "images": [1, 195, 4096],
+    "images_avec_normalisation_angulaire": [195, 4096],
+    "repetitions_par_sequence": 2,
+    "sorties_cuda_controlees": 6,
+    "ecart_max": {
+      "obs": 0,
+      "f_cliffcam": 0,
+      "f_cam_angvel": 0
+    },
+    "scores_aux_bords_et_hors_boite_identiques": true,
+    "rejeu_smplx": "En attente du runtime CyTools VideoToGaussian et des poids locaux."
+  },
+  "documentation": "libraries/gvhmr/README.md"
+}

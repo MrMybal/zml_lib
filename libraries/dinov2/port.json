@@ -8,5 +8,25 @@
   "interface": "Encodage image ViT-L/14 dans le checkpoint de profondeur. Sorties d'activations des blocs 4, 11, 17 et 23 avec le token de classe.",
   "tenseurs": 343,
   "validation": "Activations FP32 comparées à PyTorch sur cpu:0, aux résolutions 28 × 42 et 42 × 28. Écart absolu maximal de 7.867813110351562e-5.",
-  "reference": "https://github.com/DepthAnything/Depth-Anything-V2"
+  "reference": "https://github.com/DepthAnything/Depth-Anything-V2",
+  "trellis_v1": {
+    "architecture": "dinov2_vitl14_reg",
+    "checkpoint": "dinov2_vitl14_reg4_pretrain.pth",
+    "tenseurs": 344,
+    "registres": 4,
+    "reference": "https://github.com/facebookresearch/dinov2/blob/main/dinov2/hub/backbones.py",
+    "licence": "Apache-2.0",
+    "validation": "Windows x64 sur cpu:0, deux inférences par image et poids synthétiques F16 promus en F32",
+    "tailles_fixture": [[42, 84], [70, 70]],
+    "erreur_absolue_max_fixture": 7.1525574e-7,
+    "validation_cuda": {
+      "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+      "peripherique": "NVIDIA GeForce RTX 3090",
+      "pilote": "610.47",
+      "cible": "sm_86",
+      "inferences_par_image": 2,
+      "erreur_max_42x84": 1.3113022e-6,
+      "erreur_max_70x70": 1.9669533e-6
+    }
+  }
 }

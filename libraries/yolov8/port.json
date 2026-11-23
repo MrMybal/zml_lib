@@ -7,8 +7,113 @@
     "ultralytics/bbox/hand_yolov8s.pt",
     "ultralytics/segm/person_yolov8m-seg.pt"
   ],
-  "interface": "Image avec letterbox. Sortie détections puis masques si la variante comporte une tête Segment.",
+  "interface": "Image FP32 préparée ou trame BGR8 avec letterbox ZML pour COCO. Sortie détections puis masques si la variante comporte une tête Segment.",
   "validation": "Exporter avec la version Ultralytics de référence. Comparer prédictions brutes, boîtes après NMS et masques dans la résolution source.",
   "reference": "https://docs.ultralytics.com/models/yolov8/",
+  "checkpoint_cytools": {
+    "fichier": "yolov8x.pt",
+    "profil": "coco",
+    "tenseurs_fp32": 498
+  },
+  "validation_cuda_cytools": {
+    "images": 195,
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "sorties_cuda": 390,
+    "images_avec_piste": 195,
+    "ecart_max_xywh_pixels_reseau": 0.0076904296875,
+    "ecart_max_score": 0.0001043081283569336
+  },
+  "validation_cuda_letterbox": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "opencv": "4.12.0",
+    "video": {
+      "source": "Tokyo-Walk_rgb.mp4, copie locale de CyTools VideoStudio",
+      "images": 195,
+      "entree_hw": [720, 1280],
+      "canevas_hw": [384, 640],
+      "valeurs_rgb": 143769600,
+      "sorties_cuda": 390,
+      "ecart_max_rgb8": 0,
+      "ecart_max_fp32": 0
+    },
+    "synthetique": {
+      "entrees_hw": [[720, 1280], [481, 853], [713, 401], [378, 640], [61, 31], [1, 640]],
+      "images": 12,
+      "sorties_cuda": 24,
+      "ecart_max_rgb8": 0,
+      "ecart_max_fp32": 0
+    },
+    "detecteur_poids_synthetiques": {
+      "images": 2,
+      "sorties_cuda": 8,
+      "ecart_max_xywh_bgr8_fp32": 0,
+      "ecart_max_scores_bgr8_fp32": 0
+    }
+  },
+  "validation_cuda_nms_coco": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "reference": "Torchvision 0.25.0+cu128 CPU, scores et indices COCO",
+    "sequence_synthetique": {
+      "images": 195,
+      "ancres_par_image": 5040,
+      "sorties_cuda": 390,
+      "boites_retenues": 4473,
+      "maximum_par_image": 30,
+      "indices_coordonnees_scores_identiques": true
+    },
+    "cas_isoles": {
+      "ancres_uniques": {"images": 2, "boites_retenues": 1},
+      "seuils_et_egalites": {"ancres": 21, "boites_retenues": 7},
+      "plafond": {"ancres": 8400, "boites_retenues": 300},
+      "nan_et_inf_rejetes": true
+    },
+    "detecteur_poids_synthetiques": {
+      "source": "Tokyo-Walk_rgb.mp4, copie locale de CyTools VideoStudio",
+      "images": 2,
+      "ancres_par_image": 5040,
+      "sorties_cuda": 14,
+      "boites_retenues_par_image": [300, 300],
+      "predictions_brutes_identiques": true,
+      "resultats_identiques_sans_copie_brute": true
+    }
+  },
+  "validation_cuda_coordonnees_source": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "reference": "Torchvision CPU et formules scale_boxes d’Ultralytics 8.3.253 en PyTorch FP32",
+    "sequence_synthetique": {
+      "images": 195,
+      "ancres_par_image": 5040,
+      "source_hw": [720, 1280],
+      "canevas_hw": [384, 640],
+      "sorties_cuda": 390,
+      "boites_reprojetees": 4473,
+      "ecart_max_xyxy_source_px": 0
+    },
+    "cas_isoles": {
+      "sources_hw": [[720, 1280], [481, 853], [713, 401], [40, 60], [1, 8192]],
+      "boites_reprojetees": 30,
+      "sorties_cuda": 10,
+      "ecart_max_xyxy_source_px": 0,
+      "nan_et_inf_rejetes": true
+    },
+    "detecteur_poids_synthetiques": {
+      "source": "Tokyo-Walk_rgb.mp4, copie locale de CyTools VideoStudio",
+      "images": 2,
+      "boites_reprojetees_par_image": [300, 300],
+      "sorties_cuda": 14,
+      "coordonnees_scores_indices_identiques": true,
+      "resultats_identiques_sans_copie_brute": true
+    }
+  },
   "resultats": "libraries/yolov8/README.md"
 }

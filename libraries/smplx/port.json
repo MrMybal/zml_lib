@@ -1,0 +1,30 @@
+{
+  "bibliotheque": "smplx",
+  "etat": "porte",
+  "profil": "SMPL-X neutre SuperMotion, maillage et articulations cinématiques",
+  "reference": "https://github.com/vchoutas/smplx",
+  "version_reference": "0.1.28",
+  "licence_reference_et_poids": "https://github.com/vchoutas/smplx/blob/master/LICENSE",
+  "checkpoint": {
+    "fichier": "SMPLX_NEUTRAL.npz",
+    "sha256_local": "376021446ddc86e99acacd795182bbef903e61d33b76b9d8b359c2b0865bd992",
+    "tenseurs_fp32": 8
+  },
+  "sommets": 10475,
+  "triangles": 20908,
+  "articulations_cinematiques": 55,
+  "validation_cuda": {
+    "systeme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "zml_win_checkout": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "poses": 17,
+    "lots": 4,
+    "repetitions": 2,
+    "erreur_absolue_max_sommets": 5.960464477539062e-7,
+    "erreur_absolue_max_articulations": 4.172325134277344e-7
+  },
+  "documentation": "libraries/smplx/README.md"
+}

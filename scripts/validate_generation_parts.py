@@ -11,7 +11,8 @@ import torch
 from safetensors.torch import save_file
 from torch import nn
 
-from build import ROOT, TEMP_ROOT, scratch_directory
+from build import ROOT, TEMP_ROOT, run_environment, scratch_directory
+from probe_placement import PLATFORMS, verify_placement
 
 sys.path.insert(0, str(ROOT))
 from libraries.audioldm.prepare import save_decoder, save_text
@@ -21,26 +22,26 @@ AUDIO = Path("CyTools_AudioStudio/data/models/audioldm/feeb3d14203495a4b6ac0893c
 IMAGE = Path("CyTools_ComfyFlow/data/models/vae_approx/taef1_decoder.pth")
 
 
-def run_probe(probe, arguments, placements=1):
-    result = subprocess.run([str(probe), "cpu", *map(str, arguments)], cwd=ROOT, capture_output=True, text=True, errors="replace")
+def run_probe(probe, arguments, target, placements=1):
+    backend, expected_device = target
+    result = subprocess.run([str(probe), backend, *map(str, arguments)], cwd=ROOT, capture_output=True, text=True, errors="replace")
     print(result.stderr, end="", file=sys.stderr)
     result.check_returncode()
-    if result.stderr.count("backend=cpu pjrt=cpu device=cpu:0 shards=1") != placements:
-        raise ValueError(f"{probe.name} used an unexpected backend")
+    verify_placement(result.stderr, backend, placements, expected_device)
 
 
-def compare_output(output, expected):
+def compare_output(output, expected, target):
     actual = np.fromfile(output, dtype="<f4").reshape(expected.shape)
     np.testing.assert_allclose(actual, expected, atol=1e-3, rtol=1e-3, equal_nan=False)
-    print(f"{output.stem} cpu:0 max_abs={np.max(np.abs(actual - expected)):.9g}", flush=True)
+    print(f"{output.stem} {target[0]} max_abs={np.max(np.abs(actual - expected)):.9g}", flush=True)
 
 
-def compare(probe, arguments, output, expected):
-    run_probe(probe, arguments)
-    compare_output(output, expected)
+def compare(probe, arguments, output, expected, target):
+    run_probe(probe, arguments, target)
+    compare_output(output, expected, target)
 
 
-def vocoder(directory, work, bins):
+def vocoder(directory, work, bins, target):
     from transformers import SpeechT5HifiGan
 
     model = SpeechT5HifiGan.from_pretrained(directory, local_files_only=True).float().eval()
@@ -54,10 +55,10 @@ def vocoder(directory, work, bins):
     if bins:
         input_path, output = work / "mel.f32le", work / "waveform.f32le"
         mel.numpy().astype("<f4", copy=False).tofile(input_path)
-        compare(bins / "libraries/hifigan/hifigan_probe.exe", [directory / "model.safetensors", frames, input_path, output], output, expected)
+        compare(bins / "libraries/hifigan/hifigan_probe.exe", [directory / "model.safetensors", frames, input_path, output], output, expected, target)
 
 
-def decode_audio(directory, work, bins):
+def decode_audio(directory, work, bins, target):
     from diffusers import AutoencoderKL
     from transformers import SpeechT5HifiGan
 
@@ -83,13 +84,14 @@ def decode_audio(directory, work, bins):
         run_probe(
             bins / "libraries/audioldm/audio_decode_probe.exe",
             [weights, vocoder_dir / "model.safetensors", latent_frames, source, mel_output, waveform_output],
+            target,
             placements=2,
         )
-        compare_output(mel_output, mel.numpy())
-        compare_output(waveform_output, waveform.numpy())
+        compare_output(mel_output, mel.numpy(), target)
+        compare_output(waveform_output, waveform.numpy(), target)
 
 
-def clap_text(directory, work, bins):
+def clap_text(directory, work, bins, target):
     from transformers import AutoTokenizer, ClapTextModelWithProjection
 
     tokenizer = AutoTokenizer.from_pretrained(directory / "tokenizer", local_files_only=True)
@@ -108,10 +110,10 @@ def clap_text(directory, work, bins):
         output = work / "clap_embedding.f32le"
         save_text(directory, weights)
         compare(bins / "libraries/laion_clap/clap_text_probe.exe", [weights, output, *tokens.input_ids[0].tolist()],
-                output, embedding)
+                output, embedding, target)
 
 
-def generate_audio(directory, work, bins):
+def generate_audio(directory, work, bins, target):
     from diffusers import AutoencoderKL, DDIMScheduler, UNet2DConditionModel
     from transformers import AutoTokenizer, ClapTextModelWithProjection, SpeechT5HifiGan
 
@@ -151,10 +153,11 @@ def generate_audio(directory, work, bins):
             [clap_weights, directory / "unet/diffusion_pytorch_model.safetensors", vae_weights,
              directory / "vocoder/model.safetensors", frames, steps, guidance, source, output_latent, output_waveform,
              *tokens.input_ids[1].tolist()],
+            target,
             placements=5,
         )
-        compare_output(output_latent, latent.numpy())
-        compare_output(output_waveform, waveform.numpy())
+        compare_output(output_latent, latent.numpy(), target)
+        compare_output(output_waveform, waveform.numpy(), target)
 
 
 class LatentClamp(nn.Module):
@@ -172,7 +175,7 @@ class Residual(nn.Module):
         return (self.conv(x) + x).relu()
 
 
-def preview(checkpoint, work, bins):
+def preview(checkpoint, work, bins, target):
     layers = [LatentClamp(), nn.Conv2d(16, 64, 3, padding=1), nn.ReLU()]
     for _ in range(3):
         layers.extend([Residual(), Residual(), Residual(), nn.Upsample(scale_factor=2, mode="nearest"),
@@ -191,10 +194,10 @@ def preview(checkpoint, work, bins):
         weights, input_path, output = work / "weights.safetensors", work / "latent.f32le", work / "rgb.f32le"
         save_file({key: value.detach().contiguous() for key, value in state.items()}, weights)
         latent.numpy().astype("<f4", copy=False).tofile(input_path)
-        compare(bins / "libraries/taesd/taef1_probe.exe", [weights, 2, 3, input_path, output], output, expected)
+        compare(bins / "libraries/taesd/taef1_probe.exe", [weights, 2, 3, input_path, output], output, expected, target)
 
 
-def clip(directory, work, bins):
+def clip(directory, work, bins, target):
     from transformers import CLIPTextConfig, CLIPTextModel
 
     if directory:
@@ -216,14 +219,17 @@ def clip(directory, work, bins):
     if bins:
         weights, output = work / "weights.safetensors", work / "text.f32le"
         save_file({key: value.detach().contiguous() for key, value in model.named_parameters()}, weights)
-        compare(bins / "libraries/clip/clip_text_probe.exe", [weights, output, *ids], output, expected)
+        compare(bins / "libraries/clip/clip_text_probe.exe", [weights, output, *ids], output, expected, target)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cytools", type=Path, required=True)
     parser.add_argument("--clip-model", type=Path)
+    parser.add_argument("--audio-model", type=Path, help="local AudioLDM-S Full v2 Diffusers directory")
     parser.add_argument("--reference-only", action="store_true")
+    parser.add_argument("--backend", choices=PLATFORMS, default="cpu")
+    parser.add_argument("--expected-device")
     default_parts = ("hifigan", "taef1", "clip")
     parser.add_argument("--part", action="append", choices=(*default_parts, "audioldm", "clap_text", "audioldm_generate"))
     args = parser.parse_args()
@@ -236,14 +242,19 @@ def main():
         if not bins.is_relative_to(TEMP_ROOT):
             parser.error("Expected compiled binaries under _Temp")
     torch.set_num_threads(4)
-    cases = {"hifigan": (vocoder, args.cytools / AUDIO), "taef1": (preview, args.cytools / IMAGE),
-             "clip": (clip, args.clip_model), "audioldm": (decode_audio, args.cytools / AUDIO.parent),
-             "clap_text": (clap_text, args.cytools / AUDIO.parent),
-             "audioldm_generate": (generate_audio, args.cytools / AUDIO.parent)}
+    audio = args.audio_model or args.cytools / AUDIO.parent
+    cases = {"hifigan": (vocoder, audio / "vocoder"), "taef1": (preview, args.cytools / IMAGE),
+             "clip": (clip, args.clip_model), "audioldm": (decode_audio, audio),
+             "clap_text": (clap_text, audio), "audioldm_generate": (generate_audio, audio)}
+    target = args.backend, args.expected_device
+    tools = ROOT.parent / "zml_win" / "bazel-win-tools"
     for part in args.part or default_parts:
         validate, path = cases[part]
         with scratch_directory() as work:
-            validate(path.resolve(strict=True) if path else None, work, bins)
+            os.environ.update(run_environment(work, tools))
+            if args.backend == "cuda":
+                os.environ["CUDA_CACHE_DISABLE"] = "1"
+            validate(path.resolve(strict=True) if path else None, work, bins, target)
 
 
 if __name__ == "__main__":

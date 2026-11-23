@@ -1,20 +1,24 @@
 const std = @import("std");
+const zml = @import("zml/core");
 const runtime = @import("zml_lib/runtime");
 const l = runtime.layers;
 const t = runtime.transformer;
 const Tensor = l.Tensor;
 const schemas = @import("weights.zig");
 
-pub const Profile = enum { face, hand, person };
+pub const Profile = enum { face, hand, person, coco };
+pub const letterbox = @import("letterbox.zig");
+pub const nms = @import("nms.zig");
 const same = [4]i64{ 1, 1, 1, 1 };
 const valid = [4]i64{ 0, 0, 0, 0 };
 pub const mask_channels = 32;
 
-fn schema(profile: Profile) []const l.Parameter {
+pub fn schema(profile: Profile) []const l.Parameter {
     return switch (profile) {
         .face => &schemas.face,
         .hand => &schemas.hand,
         .person => &schemas.person,
+        .coco => &@import("coco_weights.zig").schema,
     };
 }
 
@@ -33,7 +37,7 @@ fn c2f(w: l.Weights, index: usize, x: Tensor, repeat: usize, residual: bool) Ten
     var key: [64]u8 = undefined;
     const split = cbs(w, l.name(&key, "model.{d}.cv1", .{index}), x, 1, valid);
     const half = @divExact(split.dim(1), 2);
-    var features: [6]Tensor = undefined;
+    var features: [8]Tensor = undefined;
     features[0] = split.slice(1, .{ .end = half });
     features[1] = split.slice(1, .{ .start = half });
     for (0..repeat) |i| {
@@ -93,16 +97,20 @@ fn decoded(w: l.Weights, regression: Tensor, confidence: Tensor, stride: i64) Te
     const x1 = x.add(d.slice(0, .single(2)));
     const y1 = y.add(d.slice(0, .single(3)));
     const scale: f32 = @floatFromInt(stride);
-    return Tensor.stack(&.{
-        x0.add(x1).scale(scale * 0.5),               y0.add(y1).scale(scale * 0.5),
-        x1.sub(x0).scale(scale),                     y1.sub(y0).scale(scale),
-        confidence.sigmoid().reshape(.{ h, width }),
-    }, 0, .field).reshape(.{ 5, grid });
+    const boxes = Tensor.stack(&.{
+        x0.add(x1).scale(scale * 0.5), y0.add(y1).scale(scale * 0.5),
+        x1.sub(x0).scale(scale),       y1.sub(y0).scale(scale),
+    }, 0, .field).reshape(.{ 4, grid });
+    return Tensor.concatenate(&.{ boxes, confidence.sigmoid().reshape(.{ confidence.dim(1), grid }) }, 0);
 }
 
 fn forward(comptime profile: Profile, parameters: []const Tensor, input: Tensor) Tensor {
     const w: l.Weights = .{ .schema = schema(profile), .tensors = parameters };
-    const repeats: usize = if (profile == .hand) 1 else 2;
+    const repeats: usize = switch (profile) {
+        .hand => 1,
+        .face, .person => 2,
+        .coco => 3,
+    };
     const x0 = layerConv(w, 0, input, 2);
     const x1 = layerConv(w, 1, x0, 2);
     const x2 = c2f(w, 2, x1, repeats, true);
@@ -143,12 +151,23 @@ fn detectHand(p: []const Tensor, x: Tensor) Tensor {
 fn segmentPerson(p: []const Tensor, x: Tensor) Tensor {
     return forward(.person, p, x);
 }
+fn detectCoco(p: []const Tensor, x: Tensor) Tensor {
+    return forward(.coco, p, x);
+}
+
+fn detectCocoBgr(p: []const Tensor, bgr: Tensor) Tensor {
+    return detectCoco(p, letterbox.forward(bgr));
+}
 
 pub fn outputCount(profile: Profile, width: u32, height: u32) !usize {
     if (width == 0 or height == 0 or width % 32 != 0 or height % 32 != 0 or width > 4096 or height > 4096)
         return error.InvalidDimensions;
     const cells = @as(usize, width / 32) * (height / 32) * 21;
-    return if (profile == .person) cells * (5 + mask_channels) + @as(usize, width / 4) * (height / 4) * mask_channels else cells * 5;
+    return switch (profile) {
+        .person => cells * (5 + mask_channels) + @as(usize, width / 4) * (height / 4) * mask_channels,
+        .coco => cells * 84,
+        .face, .hand => cells * 5,
+    };
 }
 
 pub const Model = struct {
@@ -164,12 +183,30 @@ pub const Model = struct {
     }
 
     pub fn infer(self: *Model, width: u32, height: u32, input: []const f32, output: []f32) !u32 {
+        return self.inferFp32Bytes(width, height, std.mem.sliceAsBytes(input), output);
+    }
+
+    pub fn inferFp32Bytes(self: *Model, width: u32, height: u32, input: []const u8, output: []f32) !u32 {
         const input_shape = .{ 1, 3, @as(i64, height), @as(i64, width) };
         const result_shape = .{@as(i64, @intCast(try outputCount(self.profile, width, height)))};
         return switch (self.profile) {
-            .face => self.graph.infer(detectFace, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
-            .hand => self.graph.infer(detectHand, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
-            .person => self.graph.infer(segmentPerson, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
+            .face => self.graph.inferBytes(detectFace, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
+            .hand => self.graph.inferBytes(detectHand, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
+            .person => self.graph.inferBytes(segmentPerson, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
+            .coco => self.graph.inferBytes(detectCoco, .init(input_shape, .f32), .init(result_shape, .f32), input, output),
         };
+    }
+
+    pub fn inferBgr(self: *Model, width: u32, height: u32, input: []const u8, output: []f32) !u32 {
+        if (self.profile != .coco) return error.BgrRequiresCoco;
+        const destination = try letterbox.layout(height, width);
+        const count = try outputCount(.coco, @intCast(destination.canvas_width), @intCast(destination.canvas_height));
+        return self.graph.inferBytes(detectCocoBgr, .init(.{ 1, height, width, 3 }, .u8), .init(.{@as(i64, @intCast(count))}, .f32), input, output);
+    }
+
+    pub fn predictBgr(self: *Model, width: u32, height: u32, input: []const u8) !zml.Buffer {
+        if (self.profile != .coco) return error.BgrRequiresCoco;
+        _ = try letterbox.layout(height, width);
+        return self.graph.inferDevice(detectCocoBgr, .init(.{ 1, height, width, 3 }, .u8), input);
     }
 };

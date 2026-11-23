@@ -63,3 +63,24 @@ fn resizeCubic(input: Tensor, comptime axis: u3, size: i64, offset: f64) Tensor 
 pub fn bicubicHalfPixel(input: Tensor, height: i64, width: i64, offset: f64) Tensor {
     return resizeCubic(resizeCubic(input, 3, width, offset), 2, height, offset);
 }
+
+fn antialiasLast(input: Tensor, size: i64) Tensor {
+    const source = input.dim(3);
+    if (source == size) return input;
+    const scale = @as(f32, @floatFromInt(source)) / @as(f32, @floatFromInt(size));
+    const Shape = @TypeOf(input.shape());
+    const shape = Shape.init(.{ size, source }, .f32);
+    const target = Tensor.iota(shape.withDtype(.i32), 0).convert(.f32).addConstant(@as(f32, 0.5)).scale(scale);
+    const src = Tensor.iota(shape.withDtype(.i32), 1).convert(.f32).addConstant(@as(f32, 0.5));
+    const x = src.sub(target).abs().scale(1 / @max(1, scale));
+    const inner = x.scale(@as(f32, 1.5)).subConstant(@as(f32, 2.5)).mul(x).mul(x).addConstant(@as(f32, 1));
+    const outer = x.scale(@as(f32, -0.5)).addConstant(@as(f32, 2.5)).mul(x).subConstant(@as(f32, 4)).mul(x).addConstant(@as(f32, 2));
+    const zero = Tensor.scalar(@as(f32, 0), .f32);
+    const weight = Tensor.select(x.cmp(.LT, .scalar(@as(f32, 1), .f32)), inner, Tensor.select(x.cmp(.LT, .scalar(@as(f32, 2), .f32)), outer, zero.broad(shape)));
+    return input.dotGeneral(weight.div(weight.sum(1).broad(shape)), &.{.{ 3, 1 }}, &.{});
+}
+
+pub fn bicubicAntialias(input: Tensor, height: i64, width: i64) Tensor {
+    const horizontal = antialiasLast(input, width);
+    return antialiasLast(horizontal.transpose(.{ 0, 1, 3, 2 }), height).transpose(.{ 0, 1, 3, 2 });
+}

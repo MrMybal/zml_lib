@@ -14,4 +14,6 @@ Le test du décodeur donne 12 trames log-mel et 1 952 échantillons sur `cpu:0` 
 
 La génération depuis le prompt de test produit 5 152 échantillons sur `cpu:0` après deux pas DDIM avec guidage. Les erreurs absolues maximales contre PyTorch FP32 sont de `1.23977661e-5` sur le latent débruité et de `2.15694308e-6` sur le signal.
 
+Sous Windows x64 sur RTX 3090, le checkpoint officiel a donné les mêmes 5 152 échantillons avec un écart absolu maximal de `1,20e-5` sur le signal et de `1,98e-5` sur le latent. Le prétraitement texte, le décodeur VAE et le vocodeur ont aussi passé leurs essais CUDA séparés. Ajouter `--audio-model $model --backend cuda --expected-device 'RTX 3090'` à la commande de validation avec les cibles CUDA et les DLL IREE du fork. [Checkpoint officiel épinglé](https://huggingface.co/cvssp/audioldm-s-full-v2/tree/feeb3d14203495a4b6ac0893cbdedb2159b4819c)
+
 Le [préparateur local](prepare.py) extrait les 114 tenseurs du décodeur VAE et les 203 tenseurs de CLAP texte depuis le dossier du modèle. L’UNet et le vocodeur réutilisent leurs SafeTensors d’origine. Les probes écrivent les buffers FP32 little endian. [Référence AudioLDM](https://huggingface.co/docs/diffusers/api/pipelines/audioldm)

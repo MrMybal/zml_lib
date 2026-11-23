@@ -56,21 +56,21 @@
     "validation": "Les résultats des portages exécutés figurent dans avancement. L'inventaire des autres modèles repose sur les fichiers et les sources."
   },
   "totaux": {
-    "adaptateurs": 74,
+    "adaptateurs": 75,
     "adaptateurs_par_domaine": {
       "Image et vision": 19,
       "Génération d’images et de vidéos": 11,
       "Texte et multimodal": 10,
       "Audio, voix et parole": 16,
-      "3D, mouvement et splats": 18
+      "3D, mouvement et splats": 19
     },
     "adaptateurs_par_statut": {
-      "porte": 8,
-      "valide_windows_cpu": 9,
-      "port_existant_a_etendre": 3,
-      "a_porter": 48,
+      "porte": 14,
+      "valide_windows_cpu": 11,
+      "port_existant_a_etendre": 2,
+      "a_porter": 41,
       "architecture_a_confirmer": 4,
-      "source_implemente": 1,
+      "source_implemente": 2,
       "integration_a_specifier": 1
     },
     "comfyui_fichiers_de_poids": 13,
@@ -174,6 +174,7 @@
           "triposr",
           "unirig",
           "wham",
+          "smplx",
           "gvhmr",
           "four_d_anyone",
           "sharp",
@@ -249,7 +250,7 @@
       "fichiers_locaux": 1,
       "fichiers_de_modele_locaux": 1,
       "avancement": {
-        "etat": "CyTools General x4v3, deux tailles et deux inférences par taille sur cpu:0. Erreur maximale 3.21865082e-6.",
+        "etat": "CyTools General x4v3, deux tailles et deux inférences par taille. Erreur maximale 3.21865082e-6 sur cpu:0 et 2.44379044e-6 sur RTX 3090.",
         "documentation": "libraries/srvggnet/README.md"
       }
     },
@@ -257,7 +258,7 @@
       "id": "swinir",
       "domaine": "Image et vision",
       "dossier": "libraries/swinir",
-      "statut": "port_existant_a_etendre",
+      "statut": "porte",
       "modeles": [
         "SwinIR-M ColorCAR JPEG10 et JPEG20",
         "SwinIR-M ColorDN noise25"
@@ -275,7 +276,7 @@
       ],
       "fichiers_de_modele_locaux": 1,
       "avancement": {
-        "etat": "JPEG10 validé sur cpu:0 avec les poids CyTools. Erreur maximale 1.31130219e-6. JPEG20 et ColorDN restent à couvrir.",
+        "etat": "JPEG10, JPEG20 et ColorDN noise25 comparés à PyTorch FP32 avec les checkpoints réels sur Windows x64 et RTX 3090. Écarts absolus maximaux 1.31130219e-6, 1.43051147e-6 et 7.15255737e-7.",
         "documentation": "libraries/swinir/README.md"
       }
     },
@@ -451,7 +452,7 @@
       "domaine": "Image et vision",
       "dossier": "libraries/dinov2",
       "statut": "valide_windows_cpu",
-      "profil_porte": "ViT-L/14 sans registres, embarqué dans Depth Anything V2 Large",
+      "profil_porte": "ViT-L/14 sans registres pour Depth Anything V2 Large et avec quatre registres pour TRELLIS v1",
       "documentation": "libraries/dinov2/README.md",
       "modeles": [
         "DINOv2 ViT-S/B/L-14",
@@ -462,7 +463,7 @@
         "CyTools_MeshStudio"
       ],
       "moteur_actuel": "PyTorch, Transformers",
-      "travail": "Partager le backbone et ses sorties intermédiaires, l’interpolation de positions et la gestion des tokens de registre.",
+      "travail": "Rejouer le profil à quatre registres avec le checkpoint ViT-L/14 officiel local.",
       "reference": "https://github.com/facebookresearch/dinov2",
       "fichiers_locaux": 0,
       "catalogues_clients": [
@@ -710,7 +711,7 @@
       "id": "t5",
       "domaine": "Génération d’images et de vidéos",
       "dossier": "libraries/t5",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "T5-XXL de FLUX.1",
         "UMT5-XXL de Wan"
@@ -721,19 +722,23 @@
         "CyTools_VideoToStereo3D"
       ],
       "moteur_actuel": "ComfyUI, Transformers",
-      "travail": "Porter l’encodeur avec positions relatives T5, SentencePiece, profils T5/UMT5, et le chargement FP8/GGUF rencontré dans les workflows.",
+      "travail": "Raccorder le tokenizer et les chaînes de diffusion FLUX et Wan. Couvrir les formats FP8 et GGUF des workflows.",
       "fichiers_locaux": 0,
       "catalogues_clients": [
         "CyTools_ImageStudio/app/model_catalog.json",
         "CyTools_VideoToStereo3D/app/model_catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "Encodeurs T5 et UMT5 XXL validés contre Transformers FP32 sous Windows avec les checkpoints FP16 de FLUX et Wan. Les essais couvrent 9 et 149 tokens sur CPU et RTX 3090, et 512 tokens sur RTX 3090 via iree_cuda.",
+        "documentation": "libraries/t5/README.md"
+      }
     },
     {
       "id": "stable_diffusion",
       "domaine": "Génération d’images et de vidéos",
       "dossier": "libraries/stable_diffusion",
-      "statut": "a_porter",
+      "statut": "port_existant_a_etendre",
       "modeles": [
         "Stable Diffusion 1.5",
         "SD 1.5 Inpainting",
@@ -745,24 +750,28 @@
         "CyTools_VideoToGaussian"
       ],
       "moteur_actuel": "ComfyUI, Diffusers",
-      "travail": "Porter U-Net, VAE, conditioning, sampling et inpainting. Confirmer Pony par métadonnées de poids puis traiter SDXL comme profil de pipeline distinct avec double encodeur. Les YAML SD1/SD2 de ComfyUI sont des configurations.",
+      "travail": "Porter SD 1.5 Inpainting. Confirmer Pony par métadonnées de poids puis traiter SDXL comme profil de pipeline distinct avec double encodeur. Les YAML SD1/SD2 de ComfyUI sont des configurations.",
       "dependances": [
         "clip"
       ],
-      "reference": "https://huggingface.co/cyberdelia/CyberRealisticPony",
+      "reference": "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/tree/f03de32",
       "fichiers_locaux": 0,
       "catalogues_clients": [
         "CyTools_ImageStudio/app/model_catalog.json",
         "CyTools_VideoToGaussian/app/4danyone-catalog.json",
         "CyTools_VideoToGaussian/app/sharp-catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "SD 1.5 texte-vers-image en FP32. CLIP-L, U-Net, DDIM et VAE comparés à PyTorch sur la RTX 3090 via iree_cuda avec le checkpoint officiel. PNG 512 × 512 identiques entre le lanceur direct et la CLI ImageStudio.",
+        "documentation": "libraries/stable_diffusion/README.md"
+      }
     },
     {
       "id": "flux1",
       "domaine": "Génération d’images et de vidéos",
       "dossier": "libraries/flux1",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "FLUX.1 Schnell FP8",
         "LoRA FLUX.1"
@@ -771,13 +780,17 @@
         "CyTools_ImageStudio",
         "CyTools_ComfyFlow"
       ],
-      "moteur_actuel": "ComfyUI",
-      "travail": "Porter DiT à blocs dual-stream et single-stream, autoencodeur FLUX et profil FP8. Vérifier le support de l’échantillonneur et l’intégration des LoRA.",
+      "moteur_actuel": "CLI ZML locale et workflows ComfyUI",
+      "travail": "Raccorder la CLI aux applications clientes et couvrir les LoRA et les checkpoints FP8 à échelles séparées.",
       "dependances": [
         "clip",
         "t5"
       ],
       "fichiers_locaux": 0,
+      "avancement": {
+        "etat": "FLUX.1 Schnell E4M3FN prépare les poids locaux et génère un PNG via CLIP, T5, quatre pas d’Euler et le VAE officiel. Débruiteur et VAE comparés à PyTorch sur RTX 3090 sous Windows. PNG identiques en 512 × 512 et 1024 × 1024 entre le lanceur direct et la CLI ImageStudio. À 1024 × 1024, les deux lanceurs ont produit des PNG identiques avec 312 échelles FP8 non unitaires et les 494 cibles du LoRA Octree à 0,8. TAEF1 validé via MCP en 96 × 64.",
+        "documentation": "libraries/flux1/README.md"
+      },
       "catalogues_clients": [
         "CyTools_ImageStudio/app/model_catalog.json"
       ],
@@ -893,7 +906,7 @@
       ],
       "fichiers_de_modele_locaux": 2,
       "avancement": {
-        "etat": "ViT-S/14 et tête temporelle comparés à PyTorch sur cpu:0 sur deux clips avec les poids CyTools locaux. Erreur maximale 5.96046448e-6.",
+        "etat": "ViT-S/14 et tête temporelle comparés à PyTorch sur CPU et CUDA Windows avec les poids CyTools. Le traitement en flux garde une session, ajuste les profondeurs sur les ancrages et fond les raccords. Rejeu de 51 images en trois fenêtres sur RTX 3090, écart maximal 8.53538513e-5.",
         "documentation": "libraries/video_depth_anything/README.md"
       }
     },
@@ -1078,8 +1091,9 @@
       "id": "qwen35",
       "domaine": "Texte et multimodal",
       "dossier": "libraries/qwen35",
-      "statut": "source_implemente",
+      "statut": "valide_windows_cpu",
       "modeles": [
+        "Qwen3.5-0.8B SafeTensors",
         "Qwen 3.6 12B Hightop",
         "Qwen 3.8 27B Cold Fusion (noms de catalogue, qwen35 déclaré)"
       ],
@@ -1101,7 +1115,7 @@
       ],
       "fichiers_de_modele_locaux": 0,
       "avancement": {
-        "etat": "Lanceur SafeTensors pour les profils dense et MoE compilé sous Windows, en-tête PE AMD64 vérifié. Inférence reportée en attendant les poids locaux.",
+        "etat": "Qwen3.5-0.8B dense officiel en BF16 sur cpu:0. Les trois tokens de chacun des deux prompts sont identiques à Transformers 5.3.0. Le build CUDA du lanceur dense et MoE échoue sur le nom de module FlashInfer CUTLASS MoE manquant du fork Windows.",
         "documentation": "libraries/qwen35/README.md"
       }
     },
@@ -1372,7 +1386,7 @@
       "avancement": {
         "vocodeur": "HiFi-GAN comparé à PyTorch sur cpu:0 avec les poids CyTools locaux. Erreur maximale 3.63588333e-6.",
         "decodeur_vae": "114 tenseurs locaux et raccordement Zig au vocodeur, validés sur cpu:0. Écarts PyTorch maximaux 4.76837158e-6 pour le log-mel et 2.53785402e-8 pour le signal.",
-        "generation": "AudioLDM-S Full v2, des tokens et du bruit initial au signal mono. Poids CyTools vérifiés sur cpu:0 sur deux pas DDIM avec guidage. Écarts 1.23977661e-5 sur le latent et 2.15694308e-6 sur les 5152 échantillons.",
+        "generation": "AudioLDM-S Full v2, des tokens et du bruit initial au signal mono. Poids vérifiés sur cpu:0 et RTX 3090 sur deux pas DDIM avec guidage. Sur CUDA, écarts 1.97887421e-5 sur le latent et 1.19991601e-5 sur les 5152 échantillons.",
         "documentation_decodeur": "libraries/audioldm/README.md",
         "documentation_vocodeur": "libraries/hifigan/README.md"
       }
@@ -1512,7 +1526,7 @@
       "id": "whisper",
       "domaine": "Audio, voix et parole",
       "dossier": "libraries/whisper",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "Whisper large-v3 turbo"
       ],
@@ -1521,8 +1535,8 @@
         "CyTools_PersonaRP",
         "CyTools_PersonaRP_Colab"
       ],
-      "moteur_actuel": "Workers Whisper existants",
-      "travail": "Porter encodeur log-mel, décodage séquentiel, tokenizer, timestamps et segmentation de transcription.",
+      "moteur_actuel": "Whisper ZML disponible dans CyTools_AudioStudio et CyTools_PersonaRP. PersonaRP Colab propose PyTorch par défaut.",
+      "travail": "Valider le chemin ZML avec un probe et un moteur PJRT Linux dans PersonaRP Colab. L’export de l’édition Colab a été vérifié localement.",
       "fichiers_locaux": 0,
       "catalogues_clients": [
         "CyTools_AudioStudio/app/models/catalog.json",
@@ -1531,7 +1545,11 @@
         "CyTools_PersonaRP_Colab/outil/app/llm-catalog.json",
         "CyTools_PersonaRP_Colab/outil/app/tts-catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "Transcription locale avec encodeur et décodeur ZML persistants et clés et valeurs d’attention croisée calculées une fois par fenêtre. Large v3 Turbo officiel a reproduit les tokens, le texte et les timestamps de segments de Transformers 4.57.3 sur CPU Windows et RTX 3090, pour un WAV de 5,45 s et deux fenêtres sur un WAV de 35,45 s.",
+        "documentation": "libraries/whisper/README.md"
+      }
     },
     {
       "id": "parakeet_tdt",
@@ -1711,7 +1729,7 @@
       "id": "trellis",
       "domaine": "3D, mouvement et splats",
       "dossier": "libraries/trellis",
-      "statut": "a_porter",
+      "statut": "source_implemente",
       "modeles": [
         "TRELLIS-image-large"
       ],
@@ -1719,7 +1737,7 @@
         "CyTools_MeshStudio"
       ],
       "moteur_actuel": "PyTorch, opérateurs sparse, TRELLIS",
-      "travail": "Porter diffusion de structure et latents sparse, puis têtes de décodage rendues nécessaires par l’usage. Établir les primitives de coordonnées et convolution sparse.",
+      "travail": "Valider la chaîne avec les poids TRELLIS v1 et DINOv2 à quatre registres locaux.",
       "dependances": [
         "dinov2"
       ],
@@ -1728,7 +1746,11 @@
       "catalogues_clients": [
         "CyTools_MeshStudio/app/models/catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "Chaîne Zig/ZML de DINOv2 aux trois représentations 3D validée de bout en bout sur RTX 3090 avec poids synthétiques. DINOv2, décodeur de structure, deux flots et trois têtes ont aussi passé des comparaisons séparées avec leurs checkpoints officiels. L’extraction FlexiCubes s’exécute sur l’hôte. Le rejeu de bout en bout avec les poids officiels reste à faire.",
+        "documentation": "libraries/trellis/README.md"
+      }
     },
     {
       "id": "trellis2",
@@ -1825,7 +1847,7 @@
       "id": "triposr",
       "domaine": "3D, mouvement et splats",
       "dossier": "libraries/triposr",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "TripoSR"
       ],
@@ -1842,7 +1864,11 @@
       "catalogues_clients": [
         "CyTools_MeshStudio/app/models/catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "DINO ViT-B/16, Transformer triplan, champ et export PLY validés sur CPU avec poids synthétiques et sur RTX 3090 avec les 547 tenseurs utilisés du checkpoint officiel. L’exemple chair.png donne 252 sommets et 488 triangles.",
+        "documentation": "libraries/triposr/README.md"
+      }
     },
     {
       "id": "unirig",
@@ -1887,7 +1913,7 @@
       "id": "vitpose",
       "domaine": "3D, mouvement et splats",
       "dossier": "libraries/vitpose",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "ViTPose-H multi-COCO"
       ],
@@ -1895,7 +1921,10 @@
         "CyTools_VideoToGaussian"
       ],
       "moteur_actuel": "PyTorch, GVHMR",
-      "travail": "Porter ViT de pose et les heatmaps, avec recadrage depuis les boîtes du détecteur.",
+      "avancement": {
+        "etat": "ViT-H/16, cartes COCO et décodage UDP dans un même graphe ZML. Sur 195 images avec les poids CyTools, l’écart maximal du décodeur sur les mêmes cartes est de 0,000122 pixel par rapport à OpenCV, sur RTX 3090 via iree_cuda. GVHMR propose le recadrage et la normalisation ImageNet en ZML, partagés avec HMR2.",
+        "documentation": "libraries/vitpose/README.md"
+      },
       "dependances": [
         "yolov8"
       ],
@@ -1910,7 +1939,7 @@
       "id": "hmr2",
       "domaine": "3D, mouvement et splats",
       "dossier": "libraries/hmr2",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "HMR2 / 4DHumans"
       ],
@@ -1918,7 +1947,11 @@
         "CyTools_VideoToGaussian"
       ],
       "moteur_actuel": "PyTorch, GVHMR",
-      "travail": "Porter l’estimation humaine monoculaire et le décodeur de paramètres corporels. Traiter les assets SMPL comme données.",
+      "travail": "Porter les têtes du mode autonome d’estimation monoculaire et ses paramètres SMPL si un client en a besoin.",
+      "avancement": {
+        "etat": "Jeton d’apparence de 1 024 composantes validé sur 195 images avec les poids CyTools, sous Windows x64 sur RTX 3090 via iree_cuda. Écart FP32 maximal de 3,55e-6 face à PyTorch. GVHMR propose le recadrage et la normalisation ImageNet en ZML, partagés avec ViTPose-H.",
+        "documentation": "libraries/hmr2/README.md"
+      },
       "fichiers_locaux": 2,
       "catalogues_clients": [
         "CyTools_VideoToGaussian/app/4danyone-catalog.json",
@@ -1927,10 +1960,30 @@
       "fichiers_de_modele_locaux": 1
     },
     {
+      "id": "smplx",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/smplx",
+      "statut": "porte",
+      "modeles": [
+        "SMPL-X neutre, profil SuperMotion"
+      ],
+      "clients": [
+        "CyTools_VideoToGaussian"
+      ],
+      "moteur_actuel": "PyTorch smplx dans CyTools",
+      "reference": "https://github.com/vchoutas/smplx",
+      "fichiers_locaux": 1,
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "Maillage et 55 articulations cinématiques validés sur 17 poses avec le checkpoint neutre CyTools, sous Windows x64 sur RTX 3090 via iree_cuda. Écart absolu maximal des sommets de 5,96e-7 contre PyTorch FP32.",
+        "documentation": "libraries/smplx/README.md"
+      }
+    },
+    {
       "id": "gvhmr",
       "domaine": "3D, mouvement et splats",
       "dossier": "libraries/gvhmr",
-      "statut": "a_porter",
+      "statut": "valide_windows_cpu",
       "modeles": [
         "GVHMR SIGA24 release"
       ],
@@ -1938,17 +1991,23 @@
         "CyTools_VideoToGaussian"
       ],
       "moteur_actuel": "PyTorch, GVHMR",
-      "travail": "Porter la reconstruction temporelle dans le repère monde avec les conditions de pose, caractéristiques HMR2 et mouvement de caméra.",
+      "travail": "Intégrer les sondes au runtime client. Le décodage vidéo, la suppression des doublons et BoT-SORT s’exécutent côté hôte.",
       "dependances": [
+        "yolov8",
         "vitpose",
-        "hmr2"
+        "hmr2",
+        "smplx"
       ],
-      "fichiers_locaux": 8,
+      "fichiers_locaux": 7,
       "catalogues_clients": [
         "CyTools_VideoToGaussian/app/4danyone-catalog.json",
         "CyTools_VideoToGaussian/app/sharp-catalog.json"
       ],
-      "fichiers_de_modele_locaux": 1
+      "fichiers_de_modele_locaux": 1,
+      "avancement": {
+        "etat": "Chaîne à caméra mobile validée sur 195 images sous Windows x64 avec les poids CyTools et ZML iree_cuda sur RTX 3090. ZML exécute YOLOv8x, la mise à demi-résolution, le recadrage et la normalisation partagés par ViTPose-H et HMR2, ViTPose-H avec son décodeur UDP, le jeton HMR2, SIFT, l’appariement, SimpleVO, le réseau temporel, le décodage corporel, les corrections de contact, la cinématique inverse et SMPL-X. Les images réduites RGB8 et les recadrages FP32 sont identiques aux références PyAV et OpenCV/PyTorch. L’écart maximal de trajectoire avec OpenCV/PyCOLMAP est de 2,90°. L’écart maximal des sommets monde est de 1,10e-5 avec PyTorch FP32 stabilisé et de 5,92e-3 avec le pipeline amont.",
+        "documentation": "libraries/gvhmr/README.md"
+      }
     },
     {
       "id": "four_d_anyone",
@@ -2621,8 +2680,8 @@
       "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/body_models/smplx/SMPLX_NEUTRAL.npz",
       "format": "npz",
       "octets": 108752058,
-      "adaptateur": "gvhmr",
-      "role": "ressource_geometrique"
+      "adaptateur": "smplx",
+      "role": "checkpoint"
     },
     {
       "chemin": "CyTools_VideoToGaussian/runtime/sources/4DAnyone/third_party/GVHMR/inputs/checkpoints/gvhmr/gvhmr_siga24_release.ckpt",

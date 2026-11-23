@@ -6,21 +6,24 @@ pub const Architecture = struct {
     layers: usize,
     heads: i64,
     outputs: [4]usize,
+    grid: i64 = 37,
+    registers: i64 = 0,
 };
 
 pub const large: Architecture = .{ .channels = 1024, .layers = 24, .heads = 16, .outputs = .{ 4, 11, 17, 23 } };
 pub const small: Architecture = .{ .channels = 384, .layers = 12, .heads = 6, .outputs = .{ 2, 5, 8, 11 } };
-pub const base_grid = 37;
+pub const registered: Architecture = .{ .channels = 1024, .layers = 24, .heads = 16, .outputs = large.outputs, .registers = 4 };
+pub const fixture: Architecture = .{ .channels = 24, .layers = 2, .heads = 3, .outputs = @splat(0), .grid = 5, .registers = 4 };
 pub const patch_size = 14;
 
 fn parameter(name: []const u8, dims: anytype) Parameter {
     return .{ .name = name, .shape = .init(dims, .f32) };
 }
 
-pub fn schema(comptime profile: Architecture) [7 + profile.layers * 14]Parameter {
+pub fn schema(comptime profile: Architecture) [7 + profile.layers * 14 + @intFromBool(profile.registers != 0)]Parameter {
     @setEvalBranchQuota(100_000);
     const channels = profile.channels;
-    var result: [7 + profile.layers * 14]Parameter = undefined;
+    var result: [7 + profile.layers * 14 + @intFromBool(profile.registers != 0)]Parameter = undefined;
     result[0..7].* = .{
         parameter("pretrained.cls_token", .{ 1, 1, channels }),
         parameter("pretrained.mask_token", .{ 1, channels }),
@@ -28,7 +31,7 @@ pub fn schema(comptime profile: Architecture) [7 + profile.layers * 14]Parameter
         parameter("pretrained.norm.bias", .{channels}),
         parameter("pretrained.patch_embed.proj.weight", .{ channels, 3, patch_size, patch_size }),
         parameter("pretrained.patch_embed.proj.bias", .{channels}),
-        parameter("pretrained.pos_embed", .{ 1, base_grid * base_grid + 1, channels }),
+        parameter("pretrained.pos_embed", .{ 1, profile.grid * profile.grid + 1, channels }),
     };
     for (0..profile.layers) |i| {
         const prefix = std.fmt.comptimePrint("pretrained.blocks.{d}", .{i});
@@ -49,5 +52,6 @@ pub fn schema(comptime profile: Architecture) [7 + profile.layers * 14]Parameter
             parameter(prefix ++ ".norm2.bias", .{channels}),
         };
     }
+    if (profile.registers != 0) result[result.len - 1] = parameter("pretrained.register_tokens", .{ 1, profile.registers, channels });
     return result;
 }

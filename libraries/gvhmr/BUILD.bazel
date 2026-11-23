@@ -1,0 +1,74 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    srcs = ["weights.zig"],
+    import_name = "zml_lib/gvhmr",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime"],
+)
+
+zig_binary(
+    name = "gvhmr_temporal",
+    main = "probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)
+
+zig_binary(
+    name = "gvhmr_conditions",
+    main = "conditions_probe.zig",
+    srcs = ["conditions.zig"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_library(
+    name = "postprocess",
+    main = "postprocess.zig",
+    srcs = ["post_math.zig"],
+    import_name = "zml_lib/gvhmr/postprocess",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "gvhmr_postprocess",
+    main = "post_probe.zig",
+    deps = [":postprocess", "//runtime:runtime"],
+)
+
+zig_library(
+    name = "decode",
+    main = "decode.zig",
+    srcs = ["post_math.zig"],
+    import_name = "zml_lib/gvhmr/decode",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "gvhmr_decode",
+    main = "decode_probe.zig",
+    deps = [":decode", "//runtime:runtime"],
+)
+
+zig_binary(
+    name = "gvhmr_simplevo",
+    main = "simplevo_probe.zig",
+    srcs = ["vo_pose.zig", "vo_trajectory.zig", "vo_linear.zig", "post_math.zig"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "gvhmr_sift",
+    main = "sift_probe.zig",
+    srcs = ["sift_scale.zig", "sift_detect.zig", "sift_descriptor.zig", "post_math.zig", "pose_scale.zig"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "gvhmr_crop",
+    main = "crop_probe.zig",
+    srcs = ["pose_crop.zig", "pose_scale.zig"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)

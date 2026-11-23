@@ -1,0 +1,122 @@
+{
+  "bibliotheque": "trellis",
+  "etat": "source_implemente",
+  "profil": "TRELLIS-image-large, structure, SLAT et décodeurs de représentations 3D",
+  "dependances": ["dinov2"],
+  "reference": "https://github.com/microsoft/TRELLIS",
+  "checkpoint": {
+    "revision": "25e0d31ffbebe4b5a97464dd851910efc3002d96",
+    "fichier": "ckpts/ss_dec_conv3d_16l8_fp16.safetensors",
+    "sha256": "1c76d4a40519aa2d711cc263a8404105231ac26db31d946bed48b84fee79009a",
+    "sha256_schema": "507a646cb52a6cd5f08c98e96f9312a8c0ba20c239dae32158091ad1b3c0e299",
+    "tenseurs_f32": 38,
+    "tenseurs_f16": 36,
+    "licence_modele": "MIT"
+  },
+  "validation": {
+    "profil": "synthétique, poids F16/F32 convertis en F32, Windows x64, cpu:0",
+    "erreur_absolue_max_logits": 2.4754554e-6,
+    "coordonnees_identiques": true
+  },
+  "flots": {
+    "structure": {
+      "fichier": "ckpts/ss_flow_img_dit_L_16l8_fp16.safetensors",
+      "tenseurs": 489,
+      "sha256_schema": "72a3d8bcbcfa16dd35787b38f7c9aa51cae06e40cdf0d43467fc83ae948387ec",
+      "erreur_absolue_max_fixture": 4.7683716e-7
+    },
+    "slat": {
+      "fichier": "ckpts/slat_flow_img_dit_L_64l8p2_fp16.safetensors",
+      "tenseurs": 526,
+      "sha256_schema": "3f731c6313c2e1f50a358a8708ffab74c9a433c604b16f017fe18d9c9c9dcf04",
+      "erreur_absolue_max_fixture": 4.2468309e-7
+    },
+    "validation": "Windows x64 sur cpu:0, quatre pas d’Euler avec poids synthétiques FP32"
+  },
+  "tetes_3d": {
+    "mesh": {
+      "fichier": "ckpts/slat_dec_mesh_swin8_B_64l8m256c_fp16.safetensors",
+      "tenseurs": 120,
+      "sha256_schema": "9d08fd7eb7266db8f34abaa5309e6606cbb5088de50410b8ed91f7205828751a",
+      "erreur_absolue_max_fixture": 1.7136335e-7,
+      "sommets_fixture": 720,
+      "triangles_fixture": 1432
+    },
+    "gaussian": {
+      "fichier": "ckpts/slat_dec_gs_swin8_B_64l8gs32_fp16.safetensors",
+      "tenseurs": 101,
+      "sha256_schema": "e8dd8e03e9575f3627be7eec0836b15ed67b44f222d6407d33dca0186f70313b",
+      "erreur_absolue_max_fixture": 1.7881393e-7,
+      "gaussiennes_fixture": 288
+    },
+    "radiance": {
+      "fichier": "ckpts/slat_dec_rf_swin8_B_64l8r16_fp16.safetensors",
+      "tenseurs": 100,
+      "sha256_schema": "dabb08e5c3755c9ed2e21dd10ef4d9621cc04b59bf6d0ac112faa1afcacbbfb8",
+      "erreur_absolue_max_fixture": 2.3841858e-7,
+      "voxels_fixture": 9
+    },
+    "validation": "Windows x64 sur cpu:0, poids synthétiques F16 promus en F32 et deux inférences par tête",
+    "validation_cuda": {
+      "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+      "peripherique": "NVIDIA GeForce RTX 3090",
+      "pilote": "610.47",
+      "cible": "sm_86",
+      "inferences_par_tete": 2,
+      "erreur_max_mesh": 2.30968e-7,
+      "erreur_max_gaussian": 2.3841858e-7,
+      "erreur_max_radiance": 2.3841858e-7
+    },
+    "flexicubes": {
+      "revision": "815e075a2a400d06c48d94c347674344ed6ae5c5",
+      "licence": "Apache-2.0",
+      "licence_fichier": "libraries/trellis/flexicubes/LICENSE.txt"
+    }
+  },
+  "validation_chaine_cuda": {
+    "profil": "réduit, poids synthétiques F16/F32 promus en F32",
+    "plateforme": "Windows x64, iree_cuda PJRT 0.68",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pilote": "610.47",
+    "cible": "sm_86",
+    "image_rgb": [42, 84],
+    "jetons": [23, 24],
+    "pas_euler_par_flot": 25,
+    "sorties_cuda_verifiees": 93,
+    "grille_occupation": [8, 8, 8],
+    "voxels_occupes_identiques": 357,
+    "exports": {"sommets": 6529, "triangles": 12042, "gaussiennes": 11424, "cellules_strivec": 357},
+    "erreurs_absolues_max": {
+      "dinov2": 1.3113022e-6,
+      "flot_structure": 4.7683716e-7,
+      "logits_occupation": 3.5427511e-6,
+      "flot_slat": 7.1525574e-7,
+      "slat_denormalise": 1.9073486e-6,
+      "tete_mesh": 4.4703484e-7,
+      "tete_gaussian": 3.2782555e-7,
+      "tete_radiance": 3.5762787e-7
+    }
+  },
+  "validation_cuda_poids_officiels": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "dinov2": {"image_rgb": [518, 518], "jetons": [1374, 1024], "erreur_absolue_max": 0.00028705597},
+    "decodeur_structure": {"latent": [16, 16, 16], "voxels_occupes": 0, "erreur_absolue_max": 0.00061035156},
+    "flots": {
+      "pas_euler_par_flot": 2,
+      "conditions": "synthétiques",
+      "erreur_absolue_max_structure": 0.00058555603,
+      "erreur_absolue_max_slat": 0.00028729439
+    },
+    "tetes": {
+      "cellules_slat_synthetiques": 9,
+      "inferences_par_tete": 2,
+      "mesh": {"erreur_absolue_max": 0.00016009808, "sommets": 398, "triangles": 780},
+      "gaussian": {"erreur_absolue_max": 0.000021100044, "gaussiennes": 288},
+      "radiance": {"erreur_absolue_max": 0.00060272217, "cellules_strivec": 9}
+    }
+  },
+  "documentation": "libraries/trellis/README.md"
+}

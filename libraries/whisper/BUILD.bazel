@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    import_name = "zml_lib/whisper",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "whisper_probe",
+    main = "probe.zig",
+    srcs = ["worker.zig"],
+    deps = [":model", "//runtime:runtime", "@zml//zml/core"],
+)

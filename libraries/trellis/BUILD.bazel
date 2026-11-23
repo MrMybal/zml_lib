@@ -1,0 +1,45 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "structure",
+    main = "structure.zig",
+    import_name = "zml_lib/trellis",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "trellis_structure",
+    main = "probe.zig",
+    deps = [":structure", "//runtime:runtime"],
+)
+
+zig_library(
+    name = "flow",
+    main = "flow.zig",
+    srcs = ["flow_weights.zig"],
+    import_name = "zml_lib/trellis/flow",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "trellis_flow",
+    main = "flow_probe.zig",
+    deps = [":flow", "//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_library(
+    name = "heads",
+    main = "heads.zig",
+    srcs = ["head_weights.zig"],
+    import_name = "zml_lib/trellis/heads",
+    visibility = ["//visibility:public"],
+    deps = [":flow", "//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "trellis_heads",
+    main = "head_probe.zig",
+    deps = [":heads", "//runtime:runtime", "@zml//zml/core"],
+)

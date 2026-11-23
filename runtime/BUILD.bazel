@@ -3,7 +3,7 @@ load("@rules_zig//zig:defs.bzl", "zig_library")
 zig_library(
     name = "runtime",
     main = "session.zig",
-    srcs = ["checkpoint.zig", "layers.zig", "probe_io.zig", "spatial.zig", "tensor_model.zig", "transformer.zig"],
+    srcs = ["checkpoint.zig", "kl_decoder.zig", "layers.zig", "probe_io.zig", "spatial.zig", "tensor_model.zig", "transformer.zig", "pose_vit.zig"],
     import_name = "zml_lib/runtime",
     visibility = ["//visibility:public"],
     deps = ["@zml//mlir/dialects/stablehlo", "@zml//zml/core"],

@@ -44,6 +44,28 @@ pub const TensorModel = struct {
     ) !u32 {
         if (input.len != input_shape.count() or output.len != output_shape.count())
             return error.InvalidBufferSize;
+        return self.inferBytes(forward, input_shape, output_shape, std.mem.sliceAsBytes(input), output);
+    }
+
+    pub fn inferBytes(
+        self: *TensorModel,
+        comptime forward: anytype,
+        input_shape: zml.Shape,
+        output_shape: zml.Shape,
+        input: []const u8,
+        output: []f32,
+    ) !u32 {
+        if (output.len != output_shape.count()) return error.InvalidBufferSize;
+        var result = try self.inferDevice(forward, input_shape, input);
+        defer result.deinit();
+        if (!result.shape().eql(output_shape)) return error.UnexpectedOutputShape;
+        const shards = try self.session.verifyPlacement(&result);
+        try result.toSlice(self.session.io, .init(output_shape, std.mem.sliceAsBytes(output)));
+        return shards;
+    }
+
+    pub fn inferDevice(self: *TensorModel, comptime forward: anytype, input_shape: zml.Shape, input: []const u8) !zml.Buffer {
+        if (input.len != input_shape.byteSize()) return error.InvalidBufferSize;
         const session = self.session;
         if (self.input_shape == null or !self.input_shape.?.eql(input_shape)) {
             var replacement = try runtime.Compiled.init(session, forward, .{
@@ -55,14 +77,9 @@ pub const TensorModel = struct {
             self.input_shape = input_shape;
         }
         const executable = &self.compiled.?;
-        var source = try zml.Buffer.fromBytesOpts(session.io, session.platform, input_shape, std.mem.sliceAsBytes(input), .{ .wait = true });
+        var source = try zml.Buffer.fromBytesOpts(session.io, session.platform, input_shape, input, .{ .wait = true });
         defer source.deinit();
         try executable.run(.{source});
-        var result = executable.results.get(zml.Buffer);
-        defer result.deinit();
-        if (!result.shape().eql(output_shape)) return error.UnexpectedOutputShape;
-        const shards = try session.verifyPlacement(&result);
-        try result.toSlice(session.io, .init(output_shape, std.mem.sliceAsBytes(output)));
-        return shards;
+        return executable.results.get(zml.Buffer);
     }
 };

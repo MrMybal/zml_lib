@@ -3,14 +3,14 @@ load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
 zig_library(
     name = "model",
     main = "model.zig",
-    srcs = ["weights.zig"],
+    srcs = ["weights.zig", "coco_weights.zig", "letterbox.zig", "nms.zig"],
     import_name = "zml_lib/yolov8",
     visibility = ["//visibility:public"],
-    deps = ["//runtime:runtime"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
 )
 
 zig_binary(
     name = "yolov8_probe",
     main = "probe.zig",
-    deps = [":model", "//runtime:runtime"],
+    deps = [":model", "//runtime:runtime", "@zml//zml/core"],
 )

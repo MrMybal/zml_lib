@@ -1,0 +1,18 @@
+{
+  "bibliotheque": "hmr2",
+  "profil": "HMR2, extraction du jeton d’apparence pour GVHMR",
+  "reference": "https://shubham-goel.github.io/4dhumans/",
+  "reference_gvhmr": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+  "checkpoint": {
+    "fichier": "epoch=10-step=25000.ckpt",
+    "tenseurs_fp32": 494
+  },
+  "validation_cuda": {
+    "images": 195,
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "sorties_cuda": 98,
+    "ecart_max_jetons": 0.000003546476364135742
+  },
+  "documentation": "libraries/hmr2/README.md"
+}

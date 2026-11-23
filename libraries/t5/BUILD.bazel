@@ -1,0 +1,15 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "encoder",
+    main = "encoder.zig",
+    import_name = "zml_lib/t5_encoder",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "t5_encoder",
+    main = "probe.zig",
+    deps = [":encoder", "//runtime:runtime"],
+)

@@ -46,7 +46,7 @@ pub fn graph(
             0 => runtime.transformer.deconvNonoverlap(w, prefix ++ ".resize_layers.0", projected, 4),
             1 => runtime.transformer.deconv2x(w, prefix ++ ".resize_layers.1", projected),
             2 => projected,
-            3 => l.conv(w, prefix ++ ".resize_layers.3", projected, 2, @splat(1), true),
+            3 => l.conv3x3Stride2(w, prefix ++ ".resize_layers.3", projected, true),
             else => unreachable,
         };
         const mixed = if (motion != null and i >= 2) motion.?(w, i - 2, resized) else resized;

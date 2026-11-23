@@ -15,12 +15,16 @@ pub fn linear(w: l.Weights, name: []const u8, x: Tensor, has_bias: bool) Tensor 
     return linearParameters(x, w.get(name, ".weight"), if (has_bias) w.get(name, ".bias") else null);
 }
 
+pub fn normAffineFree(x: Tensor, eps: f32) Tensor {
+    const axis = x.rank() - 1;
+    const centered = x.sub(x.mean(axis).broad(x.shape()));
+    return centered.mul(centered.mul(centered).mean(axis).addConstant(eps).rsqrt().broad(x.shape()));
+}
+
 pub fn norm(w: l.Weights, name: []const u8, x: Tensor, eps: f32) Tensor {
     const channels = x.dim(x.rank() - 1);
     const rows = x.reshape(.{ @divExact(@as(i64, @intCast(x.shape().count())), channels), channels });
-    const centered = rows.sub(rows.mean(1).broad(rows.shape()));
-    const inverse = centered.mul(centered).mean(1).addConstant(eps).rsqrt();
-    const normalized = centered.mul(inverse.broad(rows.shape()));
+    const normalized = normAffineFree(rows, eps);
     return l.biasAdd(normalized.mul(w.get(name, ".weight").broadcast(rows.shape(), &.{1})), w.get(name, ".bias"), 1)
         .reshape(x.shape());
 }

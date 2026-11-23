@@ -1,0 +1,46 @@
+{
+  "bibliotheque": "botsort",
+  "etat": "couts_association_valides_windows_cuda",
+  "profil": "IoU XYXY FP32, fusion facultative du score, associations principale et secondaire, confirmation et coûts du dédoublonnage",
+  "reference": "https://github.com/ultralytics/ultralytics/tree/v8.3.253",
+  "licence_code_reference": "https://github.com/ultralytics/ultralytics/blob/v8.3.253/LICENSE",
+  "checkpoint": null,
+  "validation_cuda": {
+    "plateforme": "Windows x64",
+    "pjrt": "iree_cuda",
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "revision_zml": "ed3be5bffb1e84cdb9daa50b36959de996dfdeff",
+    "matrices_synthetiques": {
+      "sorties_cuda": 195,
+      "capacites_compilees": [[8, 8], [16, 8], [16, 32], [64, 128]],
+      "ecart_max_absolu_numpy": 0.0,
+      "affectations_scipy_identiques": true,
+      "paires_retenues_au_seuil_0_8": 1329,
+      "matrices_vides_identiques": true,
+      "nan_rejete": true
+    },
+    "rejeu_ultralytics": {
+      "version": "8.3.253",
+      "version_lapx": "0.10.0",
+      "images_synthetiques": 195,
+      "camera": "translation synthétique, compensation sparseOptFlow Ultralytics",
+      "sorties_cuda": 263,
+      "sorties_cuda_par_etape": {
+        "association_principale_et_confirmation": 196,
+        "detections_faible_score": 36,
+        "dedoublonnage": 31
+      },
+      "lignes_de_piste": 479,
+      "pistes_identiques": true
+    },
+    "dedoublonnage_par_blocs": {
+      "pistes_actives": 1,
+      "pistes_perdues": 513,
+      "sorties_cuda": 2,
+      "doublons_supprimes": 1,
+      "pistes_restantes_identiques": true
+    }
+  },
+  "rejeu_gvhmr_smplx": "Runtime et poids 4DAnyone requis",
+  "documentation": "libraries/botsort/README.md"
+}

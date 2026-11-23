@@ -18,20 +18,23 @@
 
 Exécutez des modèles d’IA en local en Zig avec ZML. Chaque bibliothèque fournit son graphe, une cible Bazel et les outils de conversion ou de validation de ses checkpoints.
 
-> Les derniers ports de restauration, deux profils Qwen à contexte court et AudioLDM des tokens au signal ont été validés sur CPU sous Windows x64. La couverture GPU varie selon le port. [État des sources et limites connues](VERSION.fr.md)
+> Les validations Windows x64 couvrent notamment la restauration, AudioLDM, TripoSR et Video Depth Anything sur la RTX 3090, ainsi que Qwen 3.5 et les graphes Whisper sur CPU. [État des sources et limites connues](VERSION.fr.md)
 
 ## Bibliothèques de modèles
 
 | Usage | Bibliothèques |
 | --- | --- |
-| Restauration et agrandissement d’image | [Real-ESRGAN](libraries/realesrgan/README.md), [SRVGGNet](libraries/srvggnet/README.md), [SwinIR-M JPEG10](libraries/swinir/README.md), [RealPLKSR](libraries/realplksr/README.md) |
+| Restauration et agrandissement d’image | [Real-ESRGAN](libraries/realesrgan/README.md), [SRVGGNet](libraries/srvggnet/README.md), [SwinIR-M JPEG10, JPEG20 et ColorDN](libraries/swinir/README.md), [RealPLKSR](libraries/realplksr/README.md) |
 | Restauration faciale | [RetinaFace](libraries/retinaface/README.md), [ParseNet](libraries/parsenet/README.md), [CodeFormer](libraries/codeformer/README.md) |
 | Détection et segmentation | [YOLOv8](libraries/yolov8/README.md) pour les visages, mains et personnes, [SAM](libraries/sam/README.md), [SAM 2](libraries/sam2/README.md) avec suivi d’un objet |
 | Profondeur et caractéristiques visuelles | [DINOv2](libraries/dinov2/README.md), [Depth Anything V2 Large](libraries/depth_anything_v2/README.md), [Video Depth Anything Small](libraries/video_depth_anything/README.md) |
-| Texte et composants image | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP texte](libraries/clip/README.md), [TAEF1](libraries/taesd/README.md) |
+| Texte et composants image | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP texte](libraries/clip/README.md), [Encodeurs T5 et UMT5](libraries/t5/README.md), [TAEF1](libraries/taesd/README.md) |
+| Génération d’images | [FLUX.1 Schnell](libraries/flux1/README.md), [Stable Diffusion 1.5](libraries/stable_diffusion/README.md) |
 | Génération audio | [AudioLDM](libraries/audioldm/README.md), [CLAP texte](libraries/laion_clap/README.md), [HiFi-GAN](libraries/hifigan/README.md) |
+| Reconnaissance vocale | [Whisper, transcription avec segments horodatés](libraries/whisper/README.md) |
+| Reconstruction 3D et mouvement | [TripoSR](libraries/triposr/README.md) image vers maillage, [TRELLIS v1](libraries/trellis/README.md) conditionnement DINOv2, structure, SLAT et décodeurs 3D, [GVHMR mouvement corporel depuis une vidéo](libraries/gvhmr/README.md), [ViTPose-H](libraries/vitpose/README.md), [caractéristiques d’apparence HMR2](libraries/hmr2/README.md), [SMPL-X maillage et articulations](libraries/smplx/README.md) |
 
-L’[inventaire des modèles](docs/model-adapters.json) recense les checkpoints, les dépendances et les portages restants. [Llama](libraries/llama/README.md) reproduit PyTorch sur CPU Windows avec le GGUF Dolphin 3 local converti en FP16. Le lanceur [Qwen 3.5](libraries/qwen35/README.md) compile sous Windows et attend un checkpoint local pour valider l’inférence.
+L’inventaire recense les checkpoints, les dépendances et les portages restants. Sur CPU Windows, Llama reproduit PyTorch avec le GGUF Dolphin 3 converti en FP16, et Qwen 3.5 reproduit les tokens de Transformers avec le checkpoint officiel 0.8B. [Inventaire](docs/model-adapters.json) · [Llama](libraries/llama/README.md) · [Qwen 3.5](libraries/qwen35/README.md)
 
 ## Intégration
 
@@ -67,6 +70,7 @@ Le code original de zml_lib est sous [licence MIT](LICENSE). Les composants tier
 | BasicSR | [Apache-2.0](libraries/realesrgan/third_party/LICENSE-BasicSR.txt) | Référence RRDBNet |
 | Real-ESRGAN | [BSD-3-Clause](libraries/realesrgan/third_party/LICENSE-Real-ESRGAN.txt) | Référence du modèle et code amont |
 | stb | [MIT ou alternative du domaine public](libraries/realesrgan/third_party/LICENSE-stb.txt) | Codecs d’image inclus |
+| FlexiCubes | [Apache-2.0](libraries/trellis/flexicubes/LICENSE.txt) | Tables de topologie de surface pour TRELLIS |
 | Poids des modèles | [Provenance et conditions amont](libraries/realesrgan/models/provenance.json) | Checkpoints locaux. Voir les sources indiquées par chaque bibliothèque. |
 
 ## Références

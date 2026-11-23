@@ -38,6 +38,12 @@ pub fn conv(w: Weights, name_: []const u8, x: Tensor, stride: i64, padding: [4]i
     return convGroups(w, name_, x, stride, padding, has_bias, 1);
 }
 
+pub fn conv3x3Stride2(w: Weights, name_: []const u8, x: Tensor, has_bias: bool) Tensor {
+    // A trailing pad on an even dimension is outside the last 3×3 window.
+    // Removing it preserves the convolution and avoids an invalid CUDA lowering.
+    return conv(w, name_, x, 2, .{ 1, @mod(x.dim(2), 2), 1, @mod(x.dim(3), 2) }, has_bias);
+}
+
 pub fn convGroups(w: Weights, name_: []const u8, x: Tensor, stride: i64, padding: [4]i64, has_bias: bool, groups: i64) Tensor {
     const output = x.conv2d(w.get(name_, ".weight"), .{
         .window_strides = &.{ stride, stride },

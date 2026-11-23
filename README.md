@@ -18,20 +18,23 @@
 
 Run local AI models in Zig with ZML. Each library contains its model graph, a Bazel target, and the conversion or validation tools for its supported checkpoints.
 
-> Windows x64 CPU validation covers the latest restoration ports, two short-context Qwen profiles, and AudioLDM from prompt tokens to audio. GPU coverage varies by port. [Source status and known limits](VERSION.md)
+> Windows x64 validation includes restoration, AudioLDM, TripoSR and Video Depth Anything on the RTX 3090, and Qwen 3.5 and the Whisper graphs on CPU. [Source status and known limits](VERSION.md)
 
 ## Model libraries
 
 | Use | Libraries |
 | --- | --- |
-| Image restoration and upscaling | [Real-ESRGAN](libraries/realesrgan/README.md), [SRVGGNet](libraries/srvggnet/README.md), [SwinIR-M JPEG10](libraries/swinir/README.md), [RealPLKSR](libraries/realplksr/README.md) |
+| Image restoration and upscaling | [Real-ESRGAN](libraries/realesrgan/README.md), [SRVGGNet](libraries/srvggnet/README.md), [SwinIR-M JPEG10, JPEG20 and ColorDN](libraries/swinir/README.md), [RealPLKSR](libraries/realplksr/README.md) |
 | Face restoration | [RetinaFace](libraries/retinaface/README.md), [ParseNet](libraries/parsenet/README.md), [CodeFormer](libraries/codeformer/README.md) |
 | Detection and segmentation | [YOLOv8](libraries/yolov8/README.md) for faces, hands and people, [SAM](libraries/sam/README.md), [SAM 2](libraries/sam2/README.md) with single-object tracking |
 | Depth and visual features | [DINOv2](libraries/dinov2/README.md), [Depth Anything V2 Large](libraries/depth_anything_v2/README.md), [Video Depth Anything Small](libraries/video_depth_anything/README.md) |
-| Text and image components | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP text](libraries/clip/README.md), [TAEF1](libraries/taesd/README.md) |
+| Text and image components | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP text](libraries/clip/README.md), [T5 and UMT5 encoders](libraries/t5/README.md), [TAEF1](libraries/taesd/README.md) |
+| Image generation | [FLUX.1 Schnell](libraries/flux1/README.md), [Stable Diffusion 1.5](libraries/stable_diffusion/README.md) |
 | Audio generation | [AudioLDM](libraries/audioldm/README.md), [CLAP text](libraries/laion_clap/README.md), [HiFi-GAN](libraries/hifigan/README.md) |
+| Speech recognition | [Whisper transcription with timestamped segments](libraries/whisper/README.md) |
+| 3D reconstruction and motion | [TripoSR](libraries/triposr/README.md) image-to-mesh, [TRELLIS v1](libraries/trellis/README.md) DINOv2 conditioning, structure, SLAT and 3D decoders, [GVHMR video to body motion](libraries/gvhmr/README.md), [ViTPose-H](libraries/vitpose/README.md), [HMR2 appearance features](libraries/hmr2/README.md), [SMPL-X mesh and joints](libraries/smplx/README.md) |
 
-The [model inventory](docs/model-adapters.json) records checkpoints, dependencies, and remaining ports. [Llama](libraries/llama/README.md) matched PyTorch on Windows CPU with the local Dolphin 3 GGUF converted to FP16. The [Qwen 3.5](libraries/qwen35/README.md) launcher builds on Windows and awaits a local checkpoint for inference validation.
+The inventory records checkpoints, dependencies and remaining ports. On Windows CPU, Llama matched PyTorch with the Dolphin 3 GGUF converted to FP16, and Qwen 3.5 matched Transformers token IDs with the official 0.8B checkpoint. [Model inventory](docs/model-adapters.json) · [Llama](libraries/llama/README.md) · [Qwen 3.5](libraries/qwen35/README.md)
 
 ## Integration
 
@@ -67,6 +70,7 @@ The original zml_lib code is available under the [MIT License](LICENSE). Third-p
 | BasicSR | [Apache-2.0](libraries/realesrgan/third_party/LICENSE-BasicSR.txt) | RRDBNet reference |
 | Real-ESRGAN | [BSD-3-Clause](libraries/realesrgan/third_party/LICENSE-Real-ESRGAN.txt) | Model reference and upstream code |
 | stb | [MIT or public-domain alternative](libraries/realesrgan/third_party/LICENSE-stb.txt) | Included image codecs |
+| FlexiCubes | [Apache-2.0](libraries/trellis/flexicubes/LICENSE.txt) | Surface topology tables for TRELLIS |
 | Model weights | [Provenance and upstream terms](libraries/realesrgan/models/provenance.json) | Local checkpoints. See each library for its sources. |
 
 ## References

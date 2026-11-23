@@ -1,0 +1,38 @@
+{
+  "bibliotheque": "vitpose",
+  "profil": "ViTPose-H multi-COCO, tête de pose 256×192",
+  "reference": "https://github.com/ViTAE-Transformer/ViTPose",
+  "reference_gvhmr": "6ec3ca39336c50492c0fae65fba2fb831fc7d866",
+  "checkpoint": {
+    "fichier": "vitpose-h-multi-coco.pth",
+    "tenseurs_fp32": 401
+  },
+  "validation_cuda": {
+    "images": 195,
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "sorties_cuda": 98,
+    "ecart_max_cartes": 0.0000019073486328125,
+    "ecart_max_articulations_pixels": 0.0001220703125
+  },
+  "validation_cuda_udp_synthetique": {
+    "peripherique": "NVIDIA GeForce RTX 3090",
+    "pjrt": "iree_cuda",
+    "sorties_cuda_decodeur_isole": 4,
+    "articulations": 119,
+    "articulations_absentes": 2,
+    "ecart_max_decodeur_pixels": 0.000030517578125,
+    "recadrages_production": 3,
+    "sorties_cuda_production": 2,
+    "ecart_max_production_face_au_mode_verification": 0.0
+  },
+  "validation_cuda_udp_video": {
+    "images": 195,
+    "articulations_visibles": 3315,
+    "sorties_cuda_vitpose_udp": 98,
+    "ecart_max_pixels_memes_cartes": 0.0001220703125,
+    "ecart_max_pixels_vitpose_pytorch": 0.0001220703125,
+    "scores_identiques_sur_memes_cartes": true
+  },
+  "documentation": "libraries/vitpose/README.md"
+}

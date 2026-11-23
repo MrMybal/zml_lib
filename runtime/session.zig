@@ -1,12 +1,15 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const zml = @import("zml/core");
 
 pub const checkpoint = @import("checkpoint.zig");
+pub const kl_decoder = @import("kl_decoder.zig");
 pub const layers = @import("layers.zig");
 pub const probe_io = @import("probe_io.zig");
 pub const spatial = @import("spatial.zig");
 pub const TensorModel = @import("tensor_model.zig").TensorModel;
 pub const transformer = @import("transformer.zig");
+pub const pose_vit = @import("pose_vit.zig");
 pub const Backend = enum(u32) { auto = 0, cpu = 1, cuda = 2, rocm = 3, vulkan = 4 };
 var platform_init_lock: std.Io.Mutex = .init;
 
@@ -67,9 +70,14 @@ pub const Compiled = struct {
     results: zml.Exe.Results,
 
     pub fn init(session: *const Session, comptime forward: anytype, parameters: std.meta.ArgsTuple(@TypeOf(forward))) !Compiled {
+        // IREE's Windows CUDA loader expects the caller's CUDA context when it
+        // loads modules. Keep the PJRT compile callback on the session thread.
+        var inline_io: std.Io.Threaded = .init_single_threaded;
+        const compile_io = if (builtin.os.tag == .windows and session.platform.target == .cuda and
+            std.mem.eql(u8, session.pjrtPlatform(), "iree_cuda")) inline_io.io() else session.io;
         const exe = try session.platform.compileFn(
             session.allocator,
-            session.io,
+            compile_io,
             forward,
             parameters,
             .{},

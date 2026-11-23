@@ -7,37 +7,37 @@ const Tensor = l.Tensor;
 const spec = @import("weights.zig");
 
 pub const scale = 1;
-const win = spec.window;
-const shift = win / 2;
-const tokens = win * win;
 const c = spec.channels;
 const norm_eps = 1e-5;
 
-const position_indices = blk: {
+fn positionIndices(comptime win: usize) [win * win * win * win]i32 {
     @setEvalBranchQuota(30_000);
+    const tokens = win * win;
     var index: [tokens * tokens]i32 = undefined;
     for (0..tokens) |q| {
         for (0..tokens) |k| {
             const dy: i32 = @intCast(q / win + win - 1);
             const dx: i32 = @intCast(q % win + win - 1);
-            index[q * tokens + k] = (dy - @as(i32, @intCast(k / win))) * (2 * win - 1) +
+            index[q * tokens + k] = (dy - @as(i32, @intCast(k / win))) * @as(i32, @intCast(2 * win - 1)) +
                 dx - @as(i32, @intCast(k % win));
         }
     }
-    break :blk index;
-};
+    return index;
+}
 
-fn region(coords: Tensor, length: i64) Tensor {
+fn region(comptime win: i64, coords: Tensor, length: i64) Tensor {
+    const shift = @divTrunc(win, 2);
     const edge_window: i32 = @intCast(length - win);
     const edge_shift: i32 = @intCast(length - shift);
     return coords.cmp(.GE, .scalar(edge_window, .i32)).convert(.i32)
         .add(coords.cmp(.GE, .scalar(edge_shift, .i32)).convert(.i32));
 }
 
-fn windowMask(h: i64, w: i64) Tensor {
+fn windowMask(comptime win: i64, h: i64, w: i64) Tensor {
+    const tokens = win * win;
     const map_shape = Shape.init(.{ 1, h, w, 1 }, .i32);
-    const rows = region(Tensor.iota(map_shape, 1), h);
-    const cols = region(Tensor.iota(map_shape, 2), w);
+    const rows = region(win, Tensor.iota(map_shape, 1), h);
+    const cols = region(win, Tensor.iota(map_shape, 2), w);
     const windows = @divExact(h * w, tokens);
     const labels = t.windowPartition(rows.scale(@as(i32, 3)).add(cols).convert(.f32), win).reshape(.{ windows, tokens });
     const pairs = Shape.init(.{ windows, tokens, tokens }, .f32);
@@ -52,7 +52,7 @@ fn rotate(x: Tensor, comptime axis: u3, start: i64) Tensor {
 fn attention(w: l.Weights, prefix: []const u8, x: Tensor, mask: ?Tensor, index: Tensor) Tensor {
     var key: [96]u8 = undefined;
     const qkv = t.linear(w, l.name(&key, "{s}.attn.qkv", .{prefix}), x, true)
-        .reshape(.{ x.dim(0), tokens, 3, c });
+        .reshape(.{ x.dim(0), x.dim(1), 3, c });
     const q = t.splitHeads(qkv.slice(2, .single(0)), spec.heads);
     const k = t.splitHeads(qkv.slice(2, .single(1)), spec.heads);
     const v = t.splitHeads(qkv.slice(2, .single(2)), spec.heads);
@@ -64,7 +64,9 @@ fn attention(w: l.Weights, prefix: []const u8, x: Tensor, mask: ?Tensor, index: 
     return t.linear(w, l.name(&key, "{s}.attn.proj", .{prefix}), t.attend(logits, v), true);
 }
 
-fn block(w: l.Weights, prefix: []const u8, x: Tensor, mask: ?Tensor, index: Tensor) Tensor {
+fn block(comptime win: i64, w: l.Weights, prefix: []const u8, x: Tensor, mask: ?Tensor, index: Tensor) Tensor {
+    const shift = @divTrunc(win, 2);
+    const tokens = win * win;
     var key: [96]u8 = undefined;
     const h = x.dim(1);
     const width = x.dim(2);
@@ -79,51 +81,67 @@ fn block(w: l.Weights, prefix: []const u8, x: Tensor, mask: ?Tensor, index: Tens
     return y.add(t.linear(w, l.name(&key, "{s}.mlp.fc2", .{prefix}), hidden, true));
 }
 
-fn padding(dim: i64) i64 {
+fn padding(comptime win: i64, dim: i64) i64 {
     return @mod(win - @mod(dim, win), win);
 }
 
-fn forward(parameters: []const Tensor, image: Tensor) Tensor {
-    const w: l.Weights = .{ .schema = &spec.schema, .tensors = parameters };
+fn forward(comptime win: i64, comptime image_range: f32, comptime schema: []const l.Parameter, parameters: []const Tensor, image: Tensor) Tensor {
+    const tokens = win * win;
+    const position_indices = comptime positionIndices(@intCast(win));
+    const w: l.Weights = .{ .schema = schema, .tensors = parameters };
     const source_h = image.dim(2);
     const source_w = image.dim(3);
-    const input = runtime.spatial.reflectEnd(runtime.spatial.reflectEnd(image, 2, padding(source_h)), 3, padding(source_w));
+    const input = runtime.spatial.reflectEnd(runtime.spatial.reflectEnd(image, 2, padding(win, source_h)), 3, padding(win, source_w));
     const mean = Tensor.constantTensor(.init(.{3}, .f32), std.mem.asBytes(&[_]f32{ 0.4488, 0.4371, 0.4040 }));
     const mean_image = mean.broadcast(input.shape(), &.{1});
-    const normalized = input.sub(mean_image).scale(@as(f32, 255));
+    const normalized = input.sub(mean_image).scale(image_range);
     const shallow = l.conv(w, "conv_first", normalized, 1, @splat(1), true);
     var x = t.norm(w, "patch_embed.norm", shallow.transpose(.{ 0, 2, 3, 1 }), norm_eps);
-    const mask = windowMask(input.dim(2), input.dim(3));
+    const mask = windowMask(win, input.dim(2), input.dim(3));
     const index = Tensor.constantTensor(.init(.{ tokens, tokens }, .i32), std.mem.asBytes(&position_indices));
     var key: [96]u8 = undefined;
     for (0..spec.stages) |i| {
         const residual = x;
         for (0..spec.blocks_per_stage) |j| {
-            x = block(w, l.name(&key, "layers.{d}.residual_group.blocks.{d}", .{ i, j }), x, if (j % 2 == 1) mask else null, index);
+            x = block(win, w, l.name(&key, "layers.{d}.residual_group.blocks.{d}", .{ i, j }), x, if (j % 2 == 1) mask else null, index);
         }
         const y = l.conv(w, l.name(&key, "layers.{d}.conv", .{i}), x.transpose(.{ 0, 3, 1, 2 }), 1, @splat(1), true);
         x = y.transpose(.{ 0, 2, 3, 1 }).add(residual);
     }
     const deep = t.norm(w, "norm", x, norm_eps).transpose(.{ 0, 3, 1, 2 });
     const residual = l.conv(w, "conv_after_body", deep, 1, @splat(1), true).add(shallow);
-    return normalized.add(l.conv(w, "conv_last", residual, 1, @splat(1), true)).divByConst(@as(f32, 255))
+    return normalized.add(l.conv(w, "conv_last", residual, 1, @splat(1), true)).divByConst(image_range)
         .add(mean_image).slice(2, .{ .end = source_h }).slice(3, .{ .end = source_w });
 }
 
-pub const Model = struct {
-    graph: runtime.TensorModel,
-
-    pub fn load(session: *const runtime.Session, path: []const u8) !Model {
-        return .{ .graph = try .load(session, &spec.schema, path) };
-    }
-
-    pub fn deinit(self: *Model) void {
-        self.graph.deinit();
-    }
-
-    pub fn infer(self: *Model, h: u32, w: u32, input: []const f32, output: []f32) !u32 {
-        if (h < win or w < win) return error.InvalidDimensions;
-        const shape = Shape.init(.{ 1, 3, @as(i64, h), @as(i64, w) }, .f32);
-        return self.graph.infer(forward, shape, shape, input, output);
-    }
+pub const Model = ModelFor(7, 255);
+pub const ColorDenoise = struct {
+    pub const scale = 1;
+    pub const Model = ModelFor(8, 1);
 };
+
+fn ModelFor(comptime win: i64, comptime image_range: f32) type {
+    return struct {
+        const Self = @This();
+        const schema = spec.schemaFor(win);
+        graph: runtime.TensorModel,
+
+        pub fn load(session: *const runtime.Session, path: []const u8) !Self {
+            return .{ .graph = try .load(session, &schema, path) };
+        }
+
+        pub fn deinit(self: *Self) void {
+            self.graph.deinit();
+        }
+
+        fn run(parameters: []const Tensor, image: Tensor) Tensor {
+            return forward(win, image_range, &schema, parameters, image);
+        }
+
+        pub fn infer(self: *Self, h: u32, w: u32, input: []const f32, output: []f32) !u32 {
+            if (h < win or w < win) return error.InvalidDimensions;
+            const shape = Shape.init(.{ 1, 3, @as(i64, h), @as(i64, w) }, .f32);
+            return self.graph.infer(run, shape, shape, input, output);
+        }
+    };
+}

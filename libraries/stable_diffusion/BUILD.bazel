@@ -1,0 +1,8 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary")
+
+zig_binary(
+    name = "sd15_probe",
+    main = "probe.zig",
+    srcs = ["ddim.zig", "unet.zig"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)

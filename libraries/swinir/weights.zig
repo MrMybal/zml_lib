@@ -1,6 +1,5 @@
 const std = @import("std");
 const l = @import("zml_lib/runtime").layers;
-pub const window = 7;
 pub const blocks_per_stage = 6;
 pub const stages = 6;
 pub const channels = 180;
@@ -14,7 +13,7 @@ fn pair(comptime name: []const u8, weight_shape: anytype, channels_out: i64) [2]
     return .{ param(name ++ ".weight", weight_shape), param(name ++ ".bias", .{channels_out}) };
 }
 
-pub const schema = blk: {
+pub fn schemaFor(comptime window: i64) [490]l.Parameter {
     @setEvalBranchQuota(140_000);
     var specs: [490]l.Parameter = undefined;
     specs[0..10].* = pair("conv_first", .{ channels, 3, 3, 3 }, channels) ++
@@ -37,5 +36,5 @@ pub const schema = blk: {
                 pair(b ++ ".mlp.fc2", .{ channels, 2 * channels }, channels);
         }
     }
-    break :blk specs;
-};
+    return specs;
+}
