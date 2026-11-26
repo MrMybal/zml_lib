@@ -37,6 +37,40 @@ pub fn gelu(x: Tensor) Tensor {
     return x.mul(x.scale(@as(f32, 0.7071067811865476)).erf().addConstant(@as(f32, 1))).scale(@as(f32, 0.5));
 }
 
+pub fn geluTanh(x: Tensor) Tensor {
+    const v = x.mul(x).mul(x).scale(@as(f32, 0.044715)).add(x)
+        .scale(@as(f32, 0.7978845608028654)).tanh().addConstant(@as(f32, 1));
+    return x.mul(v).scale(@as(f32, 0.5));
+}
+
+const fp8_values = blk: {
+    @setEvalBranchQuota(20_000);
+    var lut: [256]f32 = undefined;
+    for (0..256) |bits| {
+        const sign: f32 = if (bits & 128 == 0) 1 else -1;
+        const exponent = (bits >> 3) & 15;
+        const mantissa: f32 = @floatFromInt(bits & 7);
+        lut[bits] = if (exponent == 15 and bits & 7 == 7)
+            std.math.nan(f32)
+        else if (exponent == 0)
+            sign * mantissa / 512.0
+        else
+            sign * (1.0 + mantissa / 8.0) * @exp2(@as(f32, @floatFromInt(exponent)) - 7);
+    }
+    break :blk lut;
+};
+
+pub fn decodeE4M3(weight: Tensor, scale: f32) Tensor {
+    if (weight.dtype() != .u8) return weight.convert(.f32);
+    // Byte decoding supports E4M3FN weights on GPUs without native FP8 arithmetic.
+    var values = fp8_values;
+    if (scale != 1) {
+        for (&values) |*value| value.* *= scale;
+    }
+    const lut = Tensor.constantTensor(.init(.{256}, .f32), std.mem.asBytes(&values)).withTags(.{.value});
+    return lut.gather(.{ .value = weight.convert(.i32) }, .{});
+}
+
 pub fn splitHeads(x: Tensor, heads: i64) Tensor {
     return x.reshape(.{ x.dim(0), x.dim(1), heads, @divExact(x.dim(2), heads) }).transpose(.{ 0, 2, 1, 3 });
 }

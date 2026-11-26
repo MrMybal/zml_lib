@@ -1,16 +1,59 @@
-# FLUX.1 Schnell
+# FLUX.1 Schnell et Canny Dev
 
 Le débruiteur Zig/ZML reprend les 19 blocs à deux flux et les 38 blocs à flux unique de Schnell. Le graphe combine le conditionnement CLIP-L, les états cachés de T5 XXL, l’embedding temporel et les positions rotatives de la grille. Le lanceur conserve le modèle chargé pendant les pas d’Euler. [Implémentation de Black Forest Labs](https://github.com/black-forest-labs/flux/tree/802fb4713906133fcbd0d8dc5351620ca4773036)
 
 Le profil `e4m3` lit les octets SafeTensors E4M3FN et les conserve sur le périphérique. Le graphe décode leurs valeurs en FP32 pour les calculs. `f32` et `f16` sont aussi disponibles. La conversion extrait du checkpoint combiné ComfyUI Schnell le débruiteur, les encodeurs texte et le décodeur du VAE officiel. Elle écrit les tenseurs un à un. Le lanceur peut aussi utiliser TAEF1 pour les prévisualisations. [Checkpoint ComfyUI, Apache 2.0](https://huggingface.co/Comfy-Org/Flux-1-Schnell/blob/0cb207e/flux1-schnell-fp8.safetensors) · [TAEF1](https://github.com/madebyollin/taesd)
+
+## FLUX.1 Canny Dev
+
+Le profil `canny_dev` réutilise les encodeurs CLIP-L et T5-XXL, les blocs du débruiteur et le décodeur VAE de FLUX.1. Le lanceur redimensionne l’image source à la résolution demandée avec Lanczos. OpenCV extrait les contours, puis l’encodeur VAE en ZML calcule leur latent à 16 canaux en prenant la moyenne du posterior. À chaque pas, le débruiteur reçoit le bruit et le latent de contrôle concaténés, soit 128 valeurs par patch, puis prédit 64 valeurs. Euler utilise le calendrier FLUX.1 Dev décalé selon la taille de la grille. La guidance distillée vaut 30 par défaut, avec les seuils Canny 50 et 200, 50 pas et 512 tokens T5. [Pipeline de référence Black Forest Labs](https://github.com/black-forest-labs/flux/blob/802fb4713906133fcbd0d8dc5351620ca4773036/docs/structural-conditioning.md)
+
+Préparer le bundle avec les quatre fichiers locaux. La conversion vérifie les 780 noms et dimensions du débruiteur et les schémas des trois autres composants. Le stockage `auto` quantifie les matrices BF16 locales en E4M3FN avec une échelle par matrice. Les biais, les normalisations et les calculs restent en FP32. Les poids Canny Dev sont distribués sous la licence FLUX.1 Dev Non-Commercial. [Modèle et licence](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev)
+
+```powershell
+$models = 'D:\AI\Comfy-Desktop\ComfyUI-Shared\models'
+& $py -B .\libraries\flux1\prepare.py --profile canny_dev --bin-dir $bin --output $weights `
+  --denoiser "$models\diffusion_models\flux1-canny-dev.safetensors" `
+  --clip "$models\text_encoders\clip_l.safetensors" --t5 "$models\text_encoders\t5xxl_fp16.safetensors" `
+  --vae "$models\vae\ae.safetensors"
+& $py -B .\libraries\flux1\generate.py --bin-dir $bin --weights $weights --backend cuda `
+  --clip-tokenizer $clipTokenizer --t5-tokenizer $t5Tokenizer --control-image $sourceImage `
+  --prompt 'A mountain in front of a golden sun, a lake and a white pier, illustration.' `
+  --width 384 --height 384 --steps 10 --text-tokens 128 --seed 42 --output $png
+```
+
+Le Python du lanceur doit inclure OpenCV. Le tokenizer T5 peut fournir `spiece.model` ou `tokenizer.json`, comme dans l’installation ComfyUI. L’opération ImageStudio `generate_flux_canny_zml` prend le chemin local `image`, le prompt, la taille, la graine, les pas, les tokens T5, la guidance et les deux seuils. Elle utilise `IMAGESTUDIO_FLUX_CANNY_ZML_CONFIG` pour les mêmes champs de configuration que Schnell et importe l’image dans le dossier du job.
+
+### Validation Windows de Canny Dev
+
+Configurer les DLL CUDA et le compilateur IREE. La commande suivante prépare un bundle temporaire, compare les PNG du lanceur direct et de la CLI ImageStudio et vérifie le périphérique du VAE, des encodeurs texte et de chaque pas du débruiteur. Le script supprime les fichiers d’essai. [Configuration CUDA](../botsort/README.md#validation-cuda-sous-windows-x64)
+
+```powershell
+$env:ZML_TEMP_ROOT = 'D:\AI\zml_lib_Temp'
+$py = 'D:\AI\ComfyUI\.venv\Scripts\python.exe'
+$models = 'D:\AI\Comfy-Desktop\ComfyUI-Shared\models'
+$comfy = 'D:\AI\Comfy-Desktop\ComfyUI-Installs\ComfyUI\ComfyUI\comfy'
+$studio = 'D:\AI\CyTools\CyTools_ImageStudio'
+$flags = @('--@zml//platforms:cuda=true', '--@zml//platforms:rocm=false', '--@zml//platforms:vulkan=false')
+& $py -B .\scripts\build.py --target //libraries/flux1:flux1_probe --target //libraries/clip:clip_text_probe `
+  --target //libraries/t5:t5_encoder -- --repo_contents_cache= --jobs=16 --host_compilation_mode=fastbuild @flags `
+  --then $py -B .\libraries\flux1\validate_canny_generation.py --bin-dir '{bin}' --model-root $models `
+  --clip-tokenizer "$comfy\sd1_tokenizer" --t5-tokenizer "$comfy\text_encoders\t5_tokenizer" --studio $studio
+```
+
+Pour la comparaison de tenseurs à PyTorch, utiliser `validate.py --profile canny_dev --storage e4m3_scaled --weights $denoiser --upstream $fluxSrc --probe $probe --backend cuda --expected-device 'RTX 3090'`. Les options `--vae-weights $decoderWeights --vae-encoder-weights $encoderWeights --control-image $sourceImage` ajoutent le décodeur et la comparaison du latent de contours.
+
+Le checkpoint BF16 local a reproduit le SHA-256 publié, `996876670169591cb412b937fbd46ea14cbed6933aef17c48a2dcd9685c98cdb`. Sous Windows x64, le modèle de référence PyTorch FP32 a utilisé les mêmes 314 matrices déquantifiées à échelles séparées. Les écarts maximaux sur la RTX 3090 via `iree_cuda` étaient de `3,01e-4` pour une prédiction de vitesse, `1,03e-4` après quatre pas d’Euler, `6,14e-5` pour le latent de contours et `4,53e-6` pour le RGB brut du VAE. Le profil réduit Canny et le test de régression Schnell ont également passé la comparaison. [Empreinte publiée](https://github.com/black-forest-labs/flux/blob/802fb4713906133fcbd0d8dc5351620ca4773036/docs/structural-conditioning.md)
+
+En 384 × 384 avec la graine 42, dix pas et 128 tokens T5, la CLI ImageStudio et le lanceur direct ont produit des PNG identiques. L’empreinte SHA-256 est `4f8413fc1dc1148a159c0e29bb1aea1dbaf5525d1ef04d690beb636266c8174e`. Chaque parcours a confirmé 15 placements sur la RTX 3090. Le rejeu direct a pris 132,50 s, la CLI 145,20 s. Le pic mémoire de la carte entière était de 18 448 Mio en direct et de 18 631 Mio via la CLI.
 
 ## Lanceur Windows x64
 
 Configurer les DLL du backend choisi. Pour CUDA, utiliser les variables du plugin IREE et du compilateur. [Configuration CUDA](../botsort/README.md#validation-cuda-sous-windows-x64)
 
 ```powershell
-$env:ZML_TEMP_ROOT = 'D:\_Project\zml_lib_Temp'
-$py = 'D:\ComfyUI\.venv\Scripts\python.exe'
+$env:ZML_TEMP_ROOT = 'D:\AI\zml_lib_Temp'
+$py = 'D:\AI\ComfyUI\.venv\Scripts\python.exe'
 $flags = @('--@zml//platforms:cuda=true', '--@zml//platforms:rocm=false', '--@zml//platforms:vulkan=false')
 & $py -B .\scripts\build.py --target //libraries/flux1:flux1_probe --target //libraries/clip:clip_text_probe `
   --target //libraries/t5:t5_encoder --target //libraries/taesd:taef1_probe `
@@ -55,6 +98,8 @@ Le rejeu 1024 × 1024 avec le bundle reconditionné sans perte `e4m3_scaled` et 
 ## Protocole du débruiteur
 
 `flux1_probe.exe PROFIL STOCKAGE BACKEND POIDS LIGNES COLONNES TOKENS PAS ENTREE SORTIE [MANIFESTE_LORA FACTEURS_LORA]` accepte des fichiers FP32 little-endian. L’entrée contient successivement la grille de latents `[1,LIGNES,COLONNES,64]`, le texte T5 `[1,TOKENS,4096]`, le vecteur CLIP-L `[1,768]` et `PAS+1` valeurs temporelles décroissantes. Le profil de test `fixture` utilise une largeur texte de 32. L’appelant fournit et possède les fichiers. Le lanceur Python convertit les LoRA dans les deux fichiers optionnels du probe. À zéro pas, la sortie contient la vitesse prédite pour l’unique temps. Avec un ou plusieurs pas, la sortie contient le latent après intégration. Le programme vérifie le périphérique de chaque sortie avant sa copie vers l’hôte.
+
+`canny_dev` attend ensuite la grille de latents de contrôle de même taille que le bruit, suivie de la guidance en FP32. Le profil réduit `canny_fixture` utilise le même contrat de contrôle avec un texte de largeur 32. La commande `flux1_probe.exe vae_encode BACKEND POIDS H W RGB MOMENTS` accepte du RGB planaire `[1,3,8H,8W]` dans `[-1,1]` et retourne `[1,32,H,W]`, avec les 16 moyennes puis les 16 log-variances.
 
 La commande `flux1_probe.exe vae BACKEND POIDS HAUTEUR LARGEUR LATENT RGB` décode un latent planaire `[1,16,H,W]` en couleurs brutes `[1,3,8H,8W]`, en FP32 little-endian. Elle applique l’échelle et le décalage officiels de Schnell.
 

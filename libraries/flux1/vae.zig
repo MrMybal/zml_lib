@@ -5,3 +5,4 @@ pub const channels = Decoder.channels;
 pub const factor = Decoder.factor;
 pub const schema = Decoder.schema;
 pub const decode = Decoder.decode;
+pub const Encoder = runtime.kl_decoder.Encoder(channels, false, false);

@@ -65,12 +65,12 @@
       "3D, mouvement et splats": 19
     },
     "adaptateurs_par_statut": {
-      "porte": 14,
+      "porte": 18,
       "valide_windows_cpu": 11,
-      "port_existant_a_etendre": 2,
-      "a_porter": 41,
-      "architecture_a_confirmer": 4,
-      "source_implemente": 2,
+      "port_existant_a_etendre": 3,
+      "a_porter": 36,
+      "architecture_a_confirmer": 3,
+      "source_implemente": 3,
       "integration_a_specifier": 1
     },
     "comfyui_fichiers_de_poids": 13,
@@ -750,7 +750,7 @@
         "CyTools_VideoToGaussian"
       ],
       "moteur_actuel": "ComfyUI, Diffusers",
-      "travail": "Porter SD 1.5 Inpainting. Confirmer Pony par métadonnées de poids puis traiter SDXL comme profil de pipeline distinct avec double encodeur. Les YAML SD1/SD2 de ComfyUI sont des configurations.",
+      "travail": "Confirmer Pony par métadonnées de poids puis traiter SDXL comme profil de pipeline distinct avec double encodeur. Les YAML SD1/SD2 de ComfyUI sont des configurations.",
       "dependances": [
         "clip"
       ],
@@ -763,7 +763,7 @@
       ],
       "fichiers_de_modele_locaux": 0,
       "avancement": {
-        "etat": "SD 1.5 texte-vers-image en FP32. CLIP-L, U-Net, DDIM et VAE comparés à PyTorch sur la RTX 3090 via iree_cuda avec le checkpoint officiel. PNG 512 × 512 identiques entre le lanceur direct et la CLI ImageStudio.",
+        "etat": "SD 1.5 texte-vers-image et Inpainting en FP32. Les checkpoints officiels ont été comparés à PyTorch sur la RTX 3090 via iree_cuda. Chaque profil a produit le même PNG 512 × 512 avec le lanceur direct et la CLI ImageStudio. Inpainting conserve exactement les pixels hors masque.",
         "documentation": "libraries/stable_diffusion/README.md"
       }
     },
@@ -774,6 +774,7 @@
       "statut": "porte",
       "modeles": [
         "FLUX.1 Schnell FP8",
+        "FLUX.1 Canny Dev",
         "LoRA FLUX.1"
       ],
       "clients": [
@@ -781,14 +782,14 @@
         "CyTools_ComfyFlow"
       ],
       "moteur_actuel": "CLI ZML locale et workflows ComfyUI",
-      "travail": "Raccorder la CLI aux applications clientes et couvrir les LoRA et les checkpoints FP8 à échelles séparées.",
+      "travail": "Réutiliser les encodeurs de texte et le VAE de FLUX.1. Le profil Canny Dev utilise l’encodeur VAE et le conditionnement par contours. Schnell accepte les LoRA et les checkpoints FP8 à échelles séparées.",
       "dependances": [
         "clip",
         "t5"
       ],
       "fichiers_locaux": 0,
       "avancement": {
-        "etat": "FLUX.1 Schnell E4M3FN prépare les poids locaux et génère un PNG via CLIP, T5, quatre pas d’Euler et le VAE officiel. Débruiteur et VAE comparés à PyTorch sur RTX 3090 sous Windows. PNG identiques en 512 × 512 et 1024 × 1024 entre le lanceur direct et la CLI ImageStudio. À 1024 × 1024, les deux lanceurs ont produit des PNG identiques avec 312 échelles FP8 non unitaires et les 494 cibles du LoRA Octree à 0,8. TAEF1 validé via MCP en 96 × 64.",
+        "etat": "FLUX.1 Schnell E4M3FN prépare les poids locaux et génère un PNG via CLIP, T5, quatre pas d’Euler et le VAE officiel. Débruiteur et VAE comparés à PyTorch sur RTX 3090 sous Windows. PNG identiques en 512 × 512 et 1024 × 1024 entre le lanceur direct et la CLI ImageStudio. À 1024 × 1024, les deux lanceurs ont produit des PNG identiques avec 312 échelles FP8 non unitaires et les 494 cibles du LoRA Octree à 0,8. TAEF1 validé via MCP en 96 × 64. Canny Dev a produit un PNG identique en 384 × 384 en dix pas dans les deux lanceurs, avec les poids ComfyUI convertis en FP8 à échelles séparées. Le débruiteur Canny et les deux moitiés du VAE ont passé la comparaison PyTorch sur la RTX 3090.",
         "documentation": "libraries/flux1/README.md"
       },
       "catalogues_clients": [
@@ -821,11 +822,12 @@
       "id": "qwen_image",
       "domaine": "Génération d’images et de vidéos",
       "dossier": "libraries/qwen_image",
-      "statut": "a_porter",
+      "statut": "source_implemente",
       "modeles": [
         "Qwen-Image FP8",
         "Qwen-Image 2.1 int8",
         "ControlNet 2.1 int8",
+        "Qwen-Image-Edit 2511 FP8 à échelles",
         "Qwen-Image-Edit 2511 int8",
         "Qwen-Image 2512 FP8",
         "Qwen-Image Lightning LoRA"
@@ -835,7 +837,7 @@
         "CyTools_Storyboard"
       ],
       "moteur_actuel": "ComfyUI",
-      "travail": "Porter Transformer image, VAE et conditionnement texte/édition multi-image. Vérifier les variantes 2.1/2511/2512 et les formats quantifiés. Ajouter la branche ControlNet et les injections LoRA.",
+      "travail": "Raccorder le lanceur direct FP8 Edit 2511 à la CLI ImageStudio. Porter les autres profils Qwen Image, ControlNet et LoRA.",
       "dependances": [
         "qwen25_vl"
       ],
@@ -844,7 +846,11 @@
         "CyTools_ImageStudio/app/model_catalog.json",
         "CyTools_Storyboard/app/models/catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "avancement": {
+        "etat": "Chaîne FP8 à échelles avec Qwen2.5-VL et VAE validée sur Colab L4 en 512 × 512 et 1024 × 1024. Les deux pas d’Euler, le latent final et le RGB respectent le seuil de 0,001 RMSE face à PyTorch CUDA. Le lanceur direct a produit un PNG RGB de 512 × 512 en deux pas sur la L4.",
+        "documentation": "libraries/qwen_image/README.md"
+      }
     },
     {
       "id": "wan",
@@ -1175,7 +1181,7 @@
       "id": "qwen25_vl",
       "domaine": "Texte et multimodal",
       "dossier": "libraries/qwen25_vl",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "Qwen2.5-VL 7B GGUF vision",
         "Qwen2.5-VL FP8 scaled, encodeur Qwen-Image"
@@ -1187,11 +1193,15 @@
         "CyTools_Storyboard"
       ],
       "moteur_actuel": "llama.cpp/LLaVA, ComfyUI, Transformers",
-      "travail": "Porter encodeur vision, fusion des patches, positions temporelles/spatiales, prétraitement et projecteur `mmproj`. Exposer les embeddings de conditioning indépendamment du mode dialogue.",
+      "travail": "Raccorder les embeddings de conditionnement à Qwen Image Edit. Le prétraitement image et la tokenisation sont côté appelant. Le dialogue via GGUF et mmproj reste à intégrer.",
       "dependances": [
         "qwen2"
       ],
       "fichiers_locaux": 0,
+      "avancement": {
+        "etat": "ViT et décodeur texte MRoPE validés avec le checkpoint FP8 à échelles de ComfyUI converti en FP16, sous Windows sur RTX 3090. Écart maximal de 7,76e-3 et RMSE de 1,16e-4 pour la chaîne image vers conditionnement face à Transformers FP32.",
+        "documentation": "libraries/qwen25_vl/README.md"
+      },
       "catalogues_clients": [
         "CyTools_ImageStudio/app/model_catalog.json",
         "CyTools_PersonaRP/app/llm-catalog.json",
@@ -1440,7 +1450,7 @@
       "id": "qwen3_tts",
       "domaine": "Audio, voix et parole",
       "dossier": "libraries/qwen3_tts",
-      "statut": "a_porter",
+      "statut": "source_implemente",
       "modeles": [
         "Qwen3-TTS 12 Hz 0.6B et 1.7B Base, CustomVoice et VoiceDesign"
       ],
@@ -1449,8 +1459,12 @@
         "CyTools_PersonaRP",
         "CyTools_PersonaRP_Colab"
       ],
-      "moteur_actuel": "qwen-tts, PyTorch",
-      "travail": "Porter Talker, prédiction de codes, tokenizer audio 12 Hz, décodeur et paramétrage des différents profils d’inférence.",
+      "moteur_actuel": "qwen-tts (PyTorch) ou ZML dans AudioStudio et PersonaRP avec la configuration locale",
+      "avancement": {
+        "etat": "Synthèse des cinq checkpoints officiels en ZML sur Colab L4, y compris les deux CustomVoice et VoiceDesign 1.7B. Base 0.6B et 1.7B prennent en charge le clonage par empreinte et le clonage ICL avec l’encodeur audio Mimi. En ICL les codes de référence et de synthèse sont identiques à ceux de PyTorch CUDA avec les mêmes tirages, et la RMSE maximale du signal est de 1,49e-7. Les workers AudioStudio et PersonaRP produisent les WAV ICL avec au plus une unité PCM d’écart face au lanceur ZML direct.",
+        "documentation": "libraries/qwen3_tts/README.md"
+      },
+      "travail": "Compiler et valider l’inférence en CUDA natif sous Windows depuis les deux applications quand les essais GPU locaux reprennent.",
       "fichiers_locaux": 0,
       "catalogues_clients": [
         "CyTools_AudioStudio/app/models/catalog.json",
@@ -1579,9 +1593,9 @@
       "id": "phonon",
       "domaine": "Audio, voix et parole",
       "dossier": "libraries/phonon",
-      "statut": "architecture_a_confirmer",
+      "statut": "porte",
       "modeles": [
-        "Phonon 2 et 2.5",
+        "Phonon 2, 2.5 et 2.5 English",
         ".fermion Int6",
         "distribution .bps.tar.zst",
         ".fsq"
@@ -1590,8 +1604,12 @@
         "CyTools_AIChat",
         "CyTools_Subtitle"
       ],
-      "moteur_actuel": "Fermion / phonon-cli",
-      "travail": "Vérifier l’architecture et la disposition des paramètres de chaque édition. Porter le décodage audio/texte et les formats locaux ou fournir une conversion reproductible. Conserver les variantes quantifiées et la gestion des timings.",
+      "moteur_actuel": "Fermion / phonon-cli dans Subtitle, PyTorch dans AIChat, ZML optionnel dans les deux",
+      "avancement": {
+        "etat": "FastConformer et TDT portés en ZML. Sur Colab L4, Phonon 2, 2.5 et 2.5 English reproduisent les tokens et horodatages PyTorch CUDA, avec une RMSE maximale de 3,54e-8 sur l’encodeur. Le raccordement Subtitle a reproduit les mots et horodatages de ZML direct avec chevauchement sur L4. La CLI AIChat de Windows a reproduit le texte, la durée et le placement de ZML direct lors de trois appels à Phonon 2.5 sur Colab L4, dont un fichier de 40 s traité en deux segments. AIChat expose aussi la dictée ZML en direct. L’encodeur de taille fixe a reproduit les transcriptions ZML sans remplissage sur Colab L4 en 59 à 68 ms par fenêtre courte après préchauffage.",
+        "documentation": "libraries/phonon/README.md"
+      },
+      "travail": "Valider l’inférence ZML native via les applications Subtitle et AIChat sous Windows x64, y compris la capture du microphone en dictée directe dans AIChat.",
       "fichiers_locaux": 4,
       "catalogues_clients": [
         "CyTools_AIChat/app/llm-catalog.json",

@@ -84,7 +84,7 @@ def plan(checkpoint, schema, prefix):
     suffixes = tuple("." + key for key in QUANT_KEYS)
     for key in sorted(keys):
         if key.startswith(prefix) and key.endswith(suffixes) and key.rpartition(".")[0] not in weight_layers:
-            raise ValueError(f"Quantization tensor does not belong to a Schnell linear weight: {key}")
+            raise ValueError(f"Quantization tensor does not belong to a declared linear weight: {key}")
 
     fields, sources, scales = {}, {}, []
     separate_scales = 0

@@ -39,10 +39,7 @@ def expected_shapes(variant):
     return shapes
 
 
-def checkpoint_state(path, variant):
-    import torch
-
-    checkpoint = torch.load(path, map_location="cpu", weights_only=True)
+def select_state(checkpoint, *, allow_flat=False):
     if not isinstance(checkpoint, Mapping):
         raise ValueError("Checkpoint must contain a mapping")
     for key in ("params_ema", "params"):
@@ -50,12 +47,23 @@ def checkpoint_state(path, variant):
             state = checkpoint[key]
             break
     else:
-        if MODELS[variant].get("layout") != "esrgan_sequential":
+        if not allow_flat:
             raise ValueError("Checkpoint has no params_ema or params tensor mapping")
         key, state = "state_dict", checkpoint
     if not isinstance(state, Mapping):
         raise ValueError(f"Checkpoint has no {key} tensor mapping")
     return state, key
+
+
+def checkpoint_state(path, variant):
+    if path.suffix.lower() == ".safetensors":
+        from safetensors.torch import load_file
+
+        return load_file(path, device="cpu"), "state_dict"
+    import torch
+
+    checkpoint = torch.load(path, map_location="cpu", weights_only=True)
+    return select_state(checkpoint, allow_flat=MODELS[variant].get("layout") == "esrgan_sequential")
 
 
 def normalize_legacy(state, blocks):

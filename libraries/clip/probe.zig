@@ -6,6 +6,16 @@ pub const std_options: std.Options = .{ .log_level = .info };
 pub fn main(init: std.process.Init) !void {
     const allocator = init.gpa;
     const args = try init.minimal.args.toSlice(init.arena.allocator());
+    if (args.len == 2 and std.mem.eql(u8, args[1], "schema")) {
+        var scratch: [4096]u8 = undefined;
+        var writer = std.Io.File.stdout().writerStreaming(init.io, &scratch);
+        for (clip.schema) |parameter| {
+            try writer.interface.writeAll(parameter.name);
+            for (parameter.shape.dims()) |dim| try writer.interface.print("\t{d}", .{dim});
+            try writer.interface.writeByte('\n');
+        }
+        return writer.interface.flush();
+    }
     if (args.len < 5 or args.len > 4 + clip.context) return error.ExpectedBackendWeightsOutputTokenIds;
     const backend = std.meta.stringToEnum(runtime.Backend, args[1]) orelse return error.InvalidBackend;
     var tokens: [clip.context]u32 = undefined;

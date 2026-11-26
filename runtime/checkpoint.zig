@@ -52,6 +52,68 @@ pub const Parameters = struct {
     }
 };
 
+pub const Reader = struct {
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    file: std.Io.File,
+    data_start: u64,
+    storage: ?Storage,
+    tensors: []const zml.Tensor,
+    regions: []Region,
+
+    pub fn deinit(self: Reader) void {
+        self.file.close(self.io);
+        self.allocator.free(self.regions);
+        self.allocator.free(self.tensors);
+    }
+
+    pub fn readF32(self: Reader, index: usize, out: []f32) !void {
+        const shape = self.tensors[index].shape();
+        if (shape.dtype() != .f32 or shape.count() != out.len or self.storage == .f16)
+            return error.CheckpointShapeMismatch;
+        const bytes = std.mem.sliceAsBytes(out);
+        if (try self.file.readPositionalAll(self.io, bytes, self.data_start + self.regions[index].start) != bytes.len)
+            return error.InvalidCheckpoint;
+    }
+
+    pub fn loadRange(self: Reader, platform: *const zml.Platform, start: usize, end: usize) ![]zml.Buffer {
+        const tensors = self.tensors[start..end];
+        const regions = self.regions[start..end];
+        var max_size: usize = 0;
+        var max_widen_count: usize = 0;
+        for (tensors) |tensor| {
+            const shape = tensor.shape();
+            max_size = @max(max_size, shape.byteSize());
+            if (self.storage == .f16 and shape.dtype() == .f32)
+                max_widen_count = @max(max_widen_count, shape.count());
+        }
+        const allocator = self.allocator;
+        const scratch = try allocator.alignedAlloc(u8, .@"64", max_size);
+        defer allocator.free(scratch);
+        const half = try allocator.alloc(f16, max_widen_count);
+        defer allocator.free(half);
+        const buffers = try allocator.alloc(zml.Buffer, tensors.len);
+        errdefer allocator.free(buffers);
+        var uploaded: usize = 0;
+        errdefer for (buffers[0..uploaded]) |*buffer| buffer.deinit();
+        for (tensors, regions, buffers) |tensor, region, *buffer| {
+            const shape = tensor.shape();
+            const data = scratch[0..shape.byteSize()];
+            const widen = self.storage == .f16 and shape.dtype() == .f32;
+            const saved = if (widen) std.mem.sliceAsBytes(half[0..shape.count()]) else data;
+            if (try self.file.readPositionalAll(self.io, saved, self.data_start + region.start) != saved.len)
+                return error.InvalidCheckpoint;
+            if (widen) {
+                for (std.mem.bytesAsSlice(f32, data), half[0..shape.count()]) |*out, value|
+                    out.* = @floatCast(value);
+            }
+            buffer.* = try .fromBytesOpts(self.io, platform, shape, data, .{ .wait = true });
+            uploaded += 1;
+        }
+        return buffers;
+    }
+};
+
 pub fn load(
     allocator: std.mem.Allocator,
     io: std.Io,
@@ -90,6 +152,17 @@ pub fn loadMixedE4M3(
     return loadParameters(allocator, io, platform, count, spec_context, specAt, path, null);
 }
 
+pub fn openMixedE4M3(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    count: usize,
+    spec_context: anytype,
+    comptime specAt: anytype,
+    path: []const u8,
+) !Reader {
+    return openParameters(allocator, io, count, spec_context, specAt, path, null);
+}
+
 fn loadParameters(
     allocator: std.mem.Allocator,
     io: std.Io,
@@ -100,8 +173,25 @@ fn loadParameters(
     path: []const u8,
     storage: ?Storage,
 ) !Parameters {
+    var reader = try openParameters(allocator, io, count, spec_context, specAt, path, storage);
+    defer reader.deinit();
+    const buffers = try reader.loadRange(platform, 0, count);
+    const tensors = reader.tensors;
+    reader.tensors = &.{};
+    return .{ .tensors = tensors, .buffers = buffers };
+}
+
+fn openParameters(
+    allocator: std.mem.Allocator,
+    io: std.Io,
+    count: usize,
+    spec_context: anytype,
+    comptime specAt: anytype,
+    path: []const u8,
+    storage: ?Storage,
+) !Reader {
     const file = try std.Io.Dir.cwd().openFile(io, path, .{});
-    defer file.close(io);
+    errdefer file.close(io);
     const file_size = try file.length(io);
     var prefix: [8]u8 = undefined;
     if (file_size < prefix.len) return error.InvalidCheckpoint;
@@ -133,9 +223,7 @@ fn loadParameters(
     const tensors = try allocator.alloc(zml.Tensor, count);
     errdefer allocator.free(tensors);
     const regions = try allocator.alloc(Region, count);
-    defer allocator.free(regions);
-    var max_size: usize = 0;
-    var max_widen_count: usize = 0;
+    errdefer allocator.free(regions);
     for (tensors, regions, 0..) |*tensor, *region, index| {
         var name_buffer: [64]u8 = undefined;
         const spec = specAt(spec_context, index, &name_buffer);
@@ -165,9 +253,6 @@ fn loadParameters(
             std.log.err("{s}: {s}", .{ spec.name, @errorName(err) });
             return err;
         };
-        max_size = @max(max_size, shape.byteSize());
-        if (format == .f16 and dtype == .f32)
-            max_widen_count = @max(max_widen_count, shape.count());
         tensor.* = .fromShape(shape);
     }
 
@@ -181,26 +266,13 @@ fn loadParameters(
     }
     if (next_offset != file_size - data_start) return error.InvalidCheckpoint;
 
-    const scratch = try allocator.alignedAlloc(u8, .@"64", max_size);
-    defer allocator.free(scratch);
-    const half = try allocator.alloc(f16, max_widen_count);
-    defer allocator.free(half);
-    const buffers = try allocator.alloc(zml.Buffer, count);
-    errdefer allocator.free(buffers);
-    var uploaded: usize = 0;
-    errdefer for (buffers[0..uploaded]) |*buffer| buffer.deinit();
-    for (tensors, regions, buffers) |tensor, region, *buffer| {
-        const data = scratch[0..tensor.shape().byteSize()];
-        const widen = storage == .f16 and tensor.shape().dtype() == .f32;
-        const saved = if (widen) std.mem.sliceAsBytes(half[0..tensor.shape().count()]) else data;
-        if (try file.readPositionalAll(io, saved, data_start + region.start) != saved.len)
-            return error.InvalidCheckpoint;
-        if (widen) {
-            for (std.mem.bytesAsSlice(f32, data), half[0..tensor.shape().count()]) |*out, value|
-                out.* = @floatCast(value);
-        }
-        buffer.* = try .fromBytesOpts(io, platform, tensor.shape(), data, .{ .wait = true });
-        uploaded += 1;
-    }
-    return .{ .tensors = tensors, .buffers = buffers };
+    return .{
+        .allocator = allocator,
+        .io = io,
+        .file = file,
+        .data_start = data_start,
+        .storage = storage,
+        .tensors = tensors,
+        .regions = regions,
+    };
 }

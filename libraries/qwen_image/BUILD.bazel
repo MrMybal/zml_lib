@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "qwen_image",
+    main = "model.zig",
+    srcs = ["vae.zig", "denoiser.zig", "cuda_math.zig"],
+    import_name = "zml_lib/qwen_image",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//mlir/dialects/stablehlo", "@zml//pjrt", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "qwen_image_probe",
+    main = "probe.zig",
+    deps = [":qwen_image", "//runtime:runtime"],
+)

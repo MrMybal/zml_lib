@@ -7,6 +7,8 @@ const t = runtime.transformer;
 const Tensor = l.Tensor;
 
 pub const channels = 4;
+pub const inpaint_channels = 9;
+pub const image_context_channels = inpaint_channels - channels;
 pub const context_length = 77;
 pub const context_width = 768;
 const widths = [_]i64{ 320, 640, 1280, 1280 };
@@ -52,12 +54,15 @@ const Schema = struct {
     }
 };
 
-pub const schema = blk: {
+pub const schema = makeSchema(channels);
+pub const inpaint_schema = makeSchema(inpaint_channels);
+
+fn makeSchema(comptime input_channels: i64) [686]l.Parameter {
     @setEvalBranchQuota(200_000);
     var b: Schema = .{};
     b.affine("time_embed.0", .{ 1280, 320 }, 1280);
     b.affine("time_embed.2", .{ 1280, 1280 }, 1280);
-    b.affine("input_blocks.0.0", .{ 320, channels, 3, 3 }, 320);
+    b.affine("input_blocks.0.0", .{ 320, input_channels, 3, 3 }, 320);
     b.affine("out.0", .{320}, 320);
     b.affine("out.2", .{ channels, 320, 3, 3 }, channels);
     var c: i64 = 320;
@@ -97,8 +102,8 @@ pub const schema = blk: {
         }
     }
     if (b.len != b.items.len or layer != 0) @compileError("Invalid SD 1.5 U-Net schema");
-    break :blk b.items;
-};
+    return b.items;
+}
 
 fn resnet(w: l.Weights, prefix: []const u8, x: Tensor, time: Tensor) Tensor {
     var key: [112]u8 = undefined;
@@ -141,7 +146,7 @@ fn transform(w: l.Weights, name: []const u8, x: Tensor, context: Tensor) Tensor 
 }
 
 fn forward(parameters: []const Tensor, latent: Tensor, embedding: Tensor, context: Tensor) Tensor {
-    const w: l.Weights = .{ .schema = &schema, .tensors = parameters };
+    const w: l.Weights = .{ .schema = if (latent.dim(1) == inpaint_channels) &inpaint_schema else &schema, .tensors = parameters };
     const time = t.linear(w, "time_embed.2", t.linear(w, "time_embed.0", embedding, true).silu(), true).silu();
     var x = l.conv(w, "input_blocks.0.0", latent, 1, @splat(1), true);
     var skips: [12]Tensor = undefined;
@@ -180,26 +185,35 @@ fn forward(parameters: []const Tensor, latent: Tensor, embedding: Tensor, contex
     return l.conv(w, "out.2", l.groupNorm(w, "out.0", x, 32, epsilon).silu(), 1, @splat(1), true);
 }
 
+fn forwardInpaint(parameters: []const Tensor, latent: Tensor, embedding: Tensor, context: Tensor, image_context: Tensor) Tensor {
+    return forward(parameters, Tensor.concatenate(&.{ latent, image_context }, 1), embedding, context);
+}
+
 pub const Model = struct {
     session: *const runtime.Session,
     weights: runtime.checkpoint.Parameters,
     graph: runtime.Compiled,
     image: zml.Shape,
+    image_context: ?zml.Shape,
 
     const embedding_shape: zml.Shape = .init(.{ 1, 320 }, .f32);
     const context_shape: zml.Shape = .init(.{ 1, context_length, context_width }, .f32);
 
-    pub fn load(session: *const runtime.Session, path: []const u8, height: i64, width: i64) !Model {
+    pub fn load(session: *const runtime.Session, path: []const u8, height: i64, width: i64, inpaint: bool) !Model {
         if (height < 8 or height > 64 or @mod(height, 8) != 0 or width < 8 or width > 64 or @mod(width, 8) != 0)
             return error.InvalidLatentShape;
         const image: zml.Shape = .init(.{ 1, channels, height, width }, .f32);
-        const weights = try runtime.checkpoint.load(session.allocator, session.io, session.platform, schema.len, &schema, l.Parameter.at, path);
+        const expected = if (inpaint) &inpaint_schema else &schema;
+        const image_context: ?zml.Shape = if (inpaint) .init(.{ 1, image_context_channels, height, width }, .f32) else null;
+        const weights = try runtime.checkpoint.load(session.allocator, session.io, session.platform, expected.len, expected, l.Parameter.at, path);
         errdefer weights.deinit(session.allocator);
-        var graph = try runtime.Compiled.init(session, forward, .{
+        var graph = if (image_context) |shape| try runtime.Compiled.init(session, forwardInpaint, .{
+            weights.tensors, Tensor.fromShape(image), Tensor.fromShape(embedding_shape), Tensor.fromShape(context_shape), Tensor.fromShape(shape),
+        }) else try runtime.Compiled.init(session, forward, .{
             weights.tensors, Tensor.fromShape(image), Tensor.fromShape(embedding_shape), Tensor.fromShape(context_shape),
         });
         graph.args.bake(weights.buffers);
-        return .{ .session = session, .weights = weights, .graph = graph, .image = image };
+        return .{ .session = session, .weights = weights, .graph = graph, .image = image, .image_context = image_context };
     }
 
     pub fn condition(self: *const Model, values: []const f32) !zml.Buffer {
@@ -207,8 +221,15 @@ pub const Model = struct {
         return .fromBytesOpts(self.session.io, self.session.platform, context_shape, std.mem.sliceAsBytes(values), .{ .wait = true });
     }
 
-    pub fn predict(self: *Model, timestep: usize, latent: []const f32, context: zml.Buffer, output: []f32) !u32 {
-        if (latent.len != self.image.count() or output.len != latent.len or timestep >= 1000)
+    pub fn imageCondition(self: *const Model, values: []const f32) !zml.Buffer {
+        const shape = self.image_context orelse return error.InvalidConditioning;
+        if (values.len != shape.count()) return error.InvalidConditioning;
+        return .fromBytesOpts(self.session.io, self.session.platform, shape, std.mem.sliceAsBytes(values), .{ .wait = true });
+    }
+
+    pub fn predict(self: *Model, timestep: usize, latent: []const f32, context: zml.Buffer, image_context: ?zml.Buffer, output: []f32) !u32 {
+        if (latent.len != self.image.count() or output.len != latent.len or timestep >= 1000 or
+            (image_context != null) != (self.image_context != null))
             return error.InvalidInput;
         var embedding: [320]f32 = undefined;
         const time: f32 = @floatFromInt(timestep);
@@ -223,7 +244,11 @@ pub const Model = struct {
         defer source.deinit();
         var time_buffer = try zml.Buffer.fromBytesOpts(session.io, session.platform, embedding_shape, std.mem.asBytes(&embedding), .{ .wait = true });
         defer time_buffer.deinit();
-        try self.graph.run(.{ source, time_buffer, context });
+        if (image_context) |conditioned| {
+            try self.graph.run(.{ source, time_buffer, context, conditioned });
+        } else {
+            try self.graph.run(.{ source, time_buffer, context });
+        }
         var noise = self.graph.results.get(zml.Buffer);
         defer noise.deinit();
         if (!noise.shape().eql(self.image)) return error.InvalidOutputShape;

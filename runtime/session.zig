@@ -19,9 +19,12 @@ pub const Session = struct {
     platform: *zml.Platform,
 
     pub fn open(allocator: std.mem.Allocator, io: std.Io, backend: Backend) !Session {
+        return openWithOptions(allocator, io, backend, .{ .cpu = .{ .device_count = 1 } });
+    }
+
+    pub fn openWithOptions(allocator: std.mem.Allocator, io: std.Io, backend: Backend, options: zml.platform.CreateOptions) !Session {
         platform_init_lock.lockUncancelable(io);
         defer platform_init_lock.unlock(io);
-        const options: zml.platform.CreateOptions = .{ .cpu = .{ .device_count = 1 } };
         const platform = switch (backend) {
             .auto => try zml.Platform.auto(allocator, io, options),
             .cpu => try zml.Platform.init(allocator, io, .cpu, options),

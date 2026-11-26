@@ -27,6 +27,13 @@ pub const Schedule = struct {
         return (self.steps - index - 1) * self.stride + 1;
     }
 
+    pub fn addNoise(self: *const Schedule, index: usize, source: []const f32, noise: []f32) void {
+        const current = self.alpha[self.timestep(index)];
+        const signal = @sqrt(current);
+        const sigma = @sqrt(1 - current);
+        for (noise, source) |*value, pixel| value.* = signal * pixel + sigma * value.*;
+    }
+
     pub fn step(self: *const Schedule, index: usize, sample: []f32, epsilon: []const f32) void {
         const t = self.timestep(index);
         const current = self.alpha[t];

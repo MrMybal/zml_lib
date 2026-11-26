@@ -1,0 +1,28 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "tdt.zig",
+    import_name = "zml_lib/phonon",
+    visibility = ["//visibility:public"],
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "phonon_tdt_probe",
+    main = "probe.zig",
+    deps = [":model", "//runtime:runtime"],
+)
+
+zig_library(
+    name = "encoder",
+    main = "encoder.zig",
+    import_name = "zml_lib/phonon/encoder",
+    deps = ["//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "phonon_asr",
+    main = "asr.zig",
+    deps = [":encoder", ":model", "//runtime:runtime"],
+)

@@ -15,17 +15,33 @@ const epsilon: f32 = 1e-6;
 
 pub const Profile = enum {
     schnell,
+    canny_dev,
     fixture,
+    canny_fixture,
 
     pub fn config(self: Profile) Config {
         return switch (self) {
             .schnell => .{ .width = 3072, .heads = 24, .text = 4096, .axes = .{ 16, 56, 56 }, .dual = 19, .single = 38 },
+            .canny_dev => .{ .width = 3072, .heads = 24, .text = 4096, .axes = .{ 16, 56, 56 }, .dual = 19, .single = 38, .control = true },
             .fixture => .{ .width = 48, .heads = 3, .text = 32, .axes = .{ 4, 6, 6 }, .dual = 2, .single = 2 },
+            .canny_fixture => .{ .width = 48, .heads = 3, .text = 32, .axes = .{ 4, 6, 6 }, .dual = 2, .single = 2, .control = true },
         };
     }
 };
 
-const Config = struct { width: i64, heads: i64, text: i64, axes: [3]i64, dual: usize, single: usize };
+const Config = struct {
+    width: i64,
+    heads: i64,
+    text: i64,
+    axes: [3]i64,
+    dual: usize,
+    single: usize,
+    control: bool = false,
+
+    fn inputChannels(self: Config) i64 {
+        return if (self.control) 2 * image_channels else image_channels;
+    }
+};
 
 fn param(name: []const u8, dims: anytype, dtype: zml.DataType) l.Parameter {
     return .{ .name = name, .shape = .init(dims, dtype) };
@@ -46,22 +62,25 @@ fn streamSchema(comptime name: []const u8, cfg: Config, dtype: zml.DataType) [12
     };
 }
 
-fn parameters(comptime cfg: Config, dtype: zml.DataType) [16 + 24 * cfg.dual + 8 * cfg.single]l.Parameter {
+fn parameters(comptime cfg: Config, dtype: zml.DataType) [(if (cfg.control) 20 else 16) + 24 * cfg.dual + 8 * cfg.single]l.Parameter {
     @setEvalBranchQuota(400_000);
     const d = cfg.width;
     const head = @divExact(d, cfg.heads);
-    var schema: [16 + 24 * cfg.dual + 8 * cfg.single]l.Parameter = undefined;
-    schema[0..16].* = pair("img_in", d, image_channels, dtype) ++ pair("txt_in", d, cfg.text, dtype) ++
+    const fixed = if (cfg.control) 20 else 16;
+    var schema: [fixed + 24 * cfg.dual + 8 * cfg.single]l.Parameter = undefined;
+    schema[0..16].* = pair("img_in", d, cfg.inputChannels(), dtype) ++ pair("txt_in", d, cfg.text, dtype) ++
         pair("time_in.in_layer", d, time_channels, dtype) ++ pair("time_in.out_layer", d, d, dtype) ++
         pair("vector_in.in_layer", d, pooled_channels, dtype) ++ pair("vector_in.out_layer", d, d, dtype) ++
         pair("final_layer.adaLN_modulation.1", 2 * d, d, dtype) ++ pair("final_layer.linear", image_channels, d, dtype);
+    if (cfg.control) schema[16..20].* = pair("guidance_in.in_layer", d, time_channels, dtype) ++
+        pair("guidance_in.out_layer", d, d, dtype);
     for (0..cfg.dual) |i| {
         const key = std.fmt.comptimePrint("double_blocks.{d}.", .{i});
-        schema[16 + i * 24 ..][0..24].* = streamSchema(key ++ "img", cfg, dtype) ++ streamSchema(key ++ "txt", cfg, dtype);
+        schema[fixed + i * 24 ..][0..24].* = streamSchema(key ++ "img", cfg, dtype) ++ streamSchema(key ++ "txt", cfg, dtype);
     }
     for (0..cfg.single) |i| {
         const key = std.fmt.comptimePrint("single_blocks.{d}.", .{i});
-        schema[16 + cfg.dual * 24 + i * 8 ..][0..8].* = pair(key ++ "modulation.lin", 3 * d, d, dtype) ++
+        schema[fixed + cfg.dual * 24 + i * 8 ..][0..8].* = pair(key ++ "modulation.lin", 3 * d, d, dtype) ++
             pair(key ++ "linear1", 7 * d, d, dtype) ++ pair(key ++ "linear2", d, 5 * d, dtype) ++ [_]l.Parameter{
             param(key ++ "norm.query_norm.scale", .{head}, dtype),
             param(key ++ "norm.key_norm.scale", .{head}, dtype),
@@ -70,33 +89,7 @@ fn parameters(comptime cfg: Config, dtype: zml.DataType) [16 + 24 * cfg.dual + 8
     return schema;
 }
 
-const fp8_values = blk: {
-    @setEvalBranchQuota(20_000);
-    var lut: [256]f32 = undefined;
-    for (0..256) |bits| {
-        const sign: f32 = if (bits & 128 == 0) 1 else -1;
-        const exponent = (bits >> 3) & 15;
-        const mantissa: f32 = @floatFromInt(bits & 7);
-        lut[bits] = if (exponent == 15 and bits & 7 == 7)
-            std.math.nan(f32)
-        else if (exponent == 0)
-            sign * mantissa / 512.0
-        else
-            sign * (1.0 + mantissa / 8.0) * @exp2(@as(f32, @floatFromInt(exponent)) - 7);
-    }
-    break :blk lut;
-};
-
-fn dequantize(weight: Tensor, scale: f32) Tensor {
-    if (weight.dtype() != .u8) return weight.convert(.f32);
-    // Use bytes and an E4M3FN table to run these weights on pre-FP8 GPUs.
-    var values = fp8_values;
-    if (scale != 1) {
-        for (&values) |*value| value.* *= scale;
-    }
-    const lut = Tensor.constantTensor(.init(.{256}, .f32), std.mem.asBytes(&values)).withTags(.{.value});
-    return lut.gather(.{ .value = weight.convert(.i32) }, .{});
-}
+const dequantize = t.decodeE4M3;
 
 const Weights = struct {
     base: l.Weights,
@@ -128,11 +121,7 @@ fn timeEmbedding(time: Tensor) Tensor {
     return Tensor.concatenate(&.{ angles.cos(), angles.sin() }, 0).reshape(.{ 1, time_channels });
 }
 
-fn geluTanh(x: Tensor) Tensor {
-    const v = x.mul(x).mul(x).scale(@as(f32, 0.044715)).add(x)
-        .scale(@as(f32, 0.7978845608028654)).tanh().addConstant(@as(f32, 1));
-    return x.mul(v).scale(@as(f32, 0.5));
-}
+const geluTanh = t.geluTanh;
 
 const Rotation = struct { cos: Tensor, sin: Tensor };
 
@@ -275,25 +264,33 @@ pub fn Model(comptime profile: Profile, comptime storage: Storage) type {
         });
         const scaled_schema = schema ++ [_]l.Parameter{param("weight_scales", .{schema.len}, .f32)};
         pub const text_channels = cfg.text;
+        pub const input_channels = cfg.inputChannels();
+        pub const has_control = cfg.control;
         session: *const runtime.Session,
         weights: runtime.checkpoint.Parameters,
         adapters: ?lora.Parameters,
         graph: runtime.Compiled,
         image_shape: zml.Shape,
+        output_shape: zml.Shape,
         text: zml.Buffer,
         pooled: zml.Buffer,
 
-        fn forward(weights: []const Tensor, scales: []const f32, adapters: lora.Graph, image: Tensor, text: Tensor, pooled: Tensor, time: Tensor) Tensor {
+        fn forward(weights: []const Tensor, scales: []const f32, adapters: lora.Graph, guidance: f32, image: Tensor, text: Tensor, pooled: Tensor, time: Tensor) Tensor {
             const w: Weights = .{ .base = .{ .schema = &schema, .tensors = weights }, .scales = scales, .adapters = adapters };
             const time_vec = linear(w, "time_in.out_layer", linear(w, "time_in.in_layer", timeEmbedding(time)).silu());
             const pooled_vec = linear(w, "vector_in.out_layer", linear(w, "vector_in.in_layer", pooled).silu());
-            const condition = time_vec.add(pooled_vec).silu();
+            const timed = if (cfg.control) time_vec.add(linear(w, "guidance_in.out_layer", linear(
+                w,
+                "guidance_in.in_layer",
+                timeEmbedding(Tensor.scalar(guidance, .f32)),
+            ).silu())) else time_vec;
+            const condition = timed.add(pooled_vec).silu();
             const rows = image.dim(1);
             const cols = image.dim(2);
             const count = text.dim(1);
             const r = rotation(cfg, rows, cols, count);
             var streams: Streams = .{
-                .image = linear(w, "img_in", image.reshape(.{ 1, rows * cols, image_channels })),
+                .image = linear(w, "img_in", image.reshape(.{ 1, rows * cols, input_channels })),
                 .text = linear(w, "txt_in", text),
             };
             for (0..cfg.dual) |i| streams = dualBlock(w, streams, condition, r, cfg, i);
@@ -301,13 +298,15 @@ pub fn Model(comptime profile: Profile, comptime storage: Storage) type {
             for (0..cfg.single) |i| joint = singleBlock(w, joint, condition, r, cfg, i);
             const mod = linear(w, "final_layer.adaLN_modulation.1", condition);
             const x = modulate(joint.slice(1, .{ .start = count }), mod.slice(1, .{ .end = cfg.width }), mod.slice(1, .{ .start = cfg.width }));
-            return linear(w, "final_layer.linear", x).reshape(image.shape());
+            return linear(w, "final_layer.linear", x).reshape(.{ 1, rows, cols, image_channels });
         }
 
-        pub fn load(session: *const runtime.Session, path: []const u8, rows: i64, cols: i64, tokens: i64, text_values: []const f32, pooled_values: []const f32, adapter_input: ?LoRAInput) !Self {
+        pub fn load(session: *const runtime.Session, path: []const u8, rows: i64, cols: i64, tokens: i64, text_values: []const f32, pooled_values: []const f32, adapter_input: ?LoRAInput, guidance: f32) !Self {
             if (rows < 1 or rows > 64 or cols < 1 or cols > 64 or tokens < 1 or tokens > 512)
                 return error.InvalidShape;
-            const image_shape: zml.Shape = .init(.{ 1, rows, cols, image_channels }, .f32);
+            if (!std.math.isFinite(guidance) or guidance < 0 or guidance > 100) return error.InvalidGuidance;
+            const image_shape: zml.Shape = .init(.{ 1, rows, cols, input_channels }, .f32);
+            const output_shape: zml.Shape = .init(.{ 1, rows, cols, image_channels }, .f32);
             const text_shape: zml.Shape = .init(.{ 1, tokens, cfg.text }, .f32);
             const pooled_shape: zml.Shape = .init(.{ 1, pooled_channels }, .f32);
             if (text_values.len != text_shape.count() or pooled_values.len != pooled_shape.count())
@@ -358,6 +357,7 @@ pub fn Model(comptime profile: Profile, comptime storage: Storage) type {
                 weights.tensors[0..schema.len],
                 &scales,
                 if (adapters) |set| set.graph() else .{},
+                guidance,
                 Tensor.fromShape(image_shape),
                 Tensor.fromShape(text_shape),
                 Tensor.fromShape(pooled_shape),
@@ -369,11 +369,11 @@ pub fn Model(comptime profile: Profile, comptime storage: Storage) type {
             var text = try zml.Buffer.fromBytesOpts(session.io, session.platform, text_shape, std.mem.sliceAsBytes(text_values), .{ .wait = true });
             errdefer text.deinit();
             const pooled = try zml.Buffer.fromBytesOpts(session.io, session.platform, pooled_shape, std.mem.sliceAsBytes(pooled_values), .{ .wait = true });
-            return .{ .session = session, .weights = weights, .adapters = adapters, .graph = graph, .image_shape = image_shape, .text = text, .pooled = pooled };
+            return .{ .session = session, .weights = weights, .adapters = adapters, .graph = graph, .image_shape = image_shape, .output_shape = output_shape, .text = text, .pooled = pooled };
         }
 
         pub fn predict(self: *Self, image: []const f32, time: f32, output: []f32) !u32 {
-            if (image.len != self.image_shape.count() or output.len != image.len or
+            if (image.len != self.image_shape.count() or output.len != self.output_shape.count() or
                 !std.math.isFinite(time) or time < 0 or time > 1) return error.InvalidInput;
             const session = self.session;
             var source = try zml.Buffer.fromBytesOpts(session.io, session.platform, self.image_shape, std.mem.sliceAsBytes(image), .{ .wait = true });
@@ -384,9 +384,9 @@ pub fn Model(comptime profile: Profile, comptime storage: Storage) type {
             try self.graph.run(.{ source, self.text, self.pooled, clock });
             var result = self.graph.results.get(zml.Buffer);
             defer result.deinit();
-            if (!result.shape().eql(self.image_shape)) return error.InvalidOutputShape;
+            if (!result.shape().eql(self.output_shape)) return error.InvalidOutputShape;
             const shards = try session.verifyPlacement(&result);
-            try result.toSlice(session.io, .init(self.image_shape, std.mem.sliceAsBytes(output)));
+            try result.toSlice(session.io, .init(self.output_shape, std.mem.sliceAsBytes(output)));
             return shards;
         }
 

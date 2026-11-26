@@ -1,0 +1,36 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "model",
+    main = "model.zig",
+    import_name = "zml_lib/qwen3_tts",
+    visibility = ["//visibility:public"],
+    deps = ["//libraries/qwen_decoder:model", "//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "qwen3_tts_probe",
+    main = "probe.zig",
+    deps = [":audio_encoder", ":model", ":speaker", ":waveform", "//runtime:runtime"],
+)
+
+zig_library(
+    name = "audio_encoder",
+    main = "audio_encoder.zig",
+    import_name = "zml_lib/qwen3_tts/audio_encoder",
+    deps = ["//libraries/qwen_decoder:model", "//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_library(
+    name = "speaker",
+    main = "speaker.zig",
+    import_name = "zml_lib/qwen3_tts/speaker",
+    deps = ["//runtime:runtime"],
+)
+
+zig_library(
+    name = "waveform",
+    main = "waveform.zig",
+    import_name = "zml_lib/qwen3_tts/waveform",
+    deps = ["//libraries/qwen_decoder:model", "//runtime:runtime", "@zml//zml/core"],
+)

@@ -10,7 +10,7 @@ import torch
 from safetensors import safe_open
 from safetensors.torch import save_file
 
-from generate import decode, denoise
+from generate import canny_edges, decode, denoise, encode_control, pack, schedule
 from fp8 import FORMAT as SCALED_FP8
 from lora import prepare_loras
 from prepare import STORAGE, schema_for, write_denoiser
@@ -50,14 +50,15 @@ def make_reference(source_root, profile, storage, checkpoint, schema, work):
     sys.path.insert(0, str(source_root.resolve(strict=True)))
     from flux.model import Flux, FluxParams
 
-    fixture = profile == "fixture"
-    config = FluxParams(in_channels=64, out_channels=64, vec_in_dim=768,
+    fixture = profile.endswith("fixture")
+    canny = profile.startswith("canny_")
+    config = FluxParams(in_channels=128 if canny else 64, out_channels=64, vec_in_dim=768,
                         context_in_dim=32 if fixture else 4096,
                         hidden_size=48 if fixture else 3072, mlp_ratio=4.0,
                         num_heads=3 if fixture else 24, depth=2 if fixture else 19,
                         depth_single_blocks=2 if fixture else 38,
                         axes_dim=[4, 6, 6] if fixture else [16, 56, 56],
-                        theta=10_000, qkv_bias=True, guidance_embed=False)
+                        theta=10_000, qkv_bias=True, guidance_embed=canny)
     with torch.device("cpu" if fixture else "meta"):
         torch.manual_seed(183)
         model = Flux(config).eval()
@@ -96,18 +97,25 @@ def reference_cases(model, width):
     ids = ids.reshape(1, 6, 3)
     text_ids = torch.zeros(1, len(text), 3)
     original = torch.from_numpy(image.reshape(1, 6, 64))
+    canny = model.params.guidance_embed
+    control = rng.standard_normal(image.shape, dtype=np.float32) if canny else None
+    control_tensor = torch.from_numpy(control.reshape(1, 6, 64)) if canny else None
+    guidance = 30.0 if canny else None
+    guidance_tensor = torch.tensor([guidance], dtype=torch.float32) if canny else None
 
     def step(tiles, time):
+        if control_tensor is not None:
+            tiles = torch.cat((tiles, control_tensor), dim=-1)
         return model(tiles, ids, torch.from_numpy(text[None]), text_ids,
-                     torch.tensor([time], dtype=torch.float32), torch.from_numpy(pooled[None]))
+                     torch.tensor([time], dtype=torch.float32), torch.from_numpy(pooled[None]), guidance=guidance_tensor)
 
     predicted = step(original, 0.73)
-    schedule = np.linspace(1, 0, 5, dtype="<f4")
+    times = schedule(4, 6, canny)
     sampled = original
-    for now, later in zip(schedule[:-1], schedule[1:], strict=True):
+    for now, later in zip(times[:-1], times[1:], strict=True):
         sampled = sampled + float(later - now) * step(sampled, float(now))
-    cases = ((np.array([0.73], dtype="<f4"), predicted), (schedule, sampled))
-    return image, text, pooled, [(times, tensor.reshape(image.shape).numpy()) for times, tensor in cases]
+    cases = ((np.array([0.73], dtype="<f4"), predicted), (times, sampled))
+    return image, text, pooled, control, guidance, [(times, tensor.reshape(image.shape).numpy()) for times, tensor in cases]
 
 
 @torch.no_grad()
@@ -144,17 +152,18 @@ def validate(args, work):
     model, checkpoint, width = make_reference(args.upstream, args.profile, args.storage, args.weights, schema, work)
     print(f"{args.profile}: checked {len(schema)} tensor shapes, running PyTorch FP32", flush=True)
     adapters = fixture_loras(model, schema, work) if args.fixture_lora else ()
-    image, text, pooled, cases = reference_cases(model, width)
+    image, text, pooled, control, guidance, cases = reference_cases(model, width)
     del model
     reports = []
     for times, expected in cases:
         actual, placement = denoise(args.probe, args.backend, args.expected_device, args.profile, args.storage,
-                                     checkpoint, image, text, pooled, times, work, adapters)
+                                     checkpoint, image, text, pooled, times, work, adapters,
+                                     control=control, guidance=guidance)
         delta = np.abs(actual - expected)
         report = {"steps": len(times) - 1, "max_abs": float(delta.max()),
                   "rmse": float(np.sqrt(np.mean(delta ** 2))), "placement": placement}
         print(json.dumps(report, allow_nan=False), flush=True)
-        atol, rtol = (6e-5, 6e-5) if args.profile == "fixture" else (2e-3, 2e-3)
+        atol, rtol = (6e-5, 6e-5) if args.profile.endswith("fixture") else (2e-3, 2e-3)
         np.testing.assert_allclose(actual, expected, atol=atol, rtol=rtol, equal_nan=False)
         reports.append(report)
         (work / "flux-out.f32").unlink()
@@ -184,20 +193,48 @@ def validate_vae(args, work):
     np.testing.assert_allclose(actual, expected, atol=6e-4, rtol=6e-4, equal_nan=False)
 
 
+@torch.inference_mode()
+def validate_control(args, work):
+    from flux.modules.autoencoder import Encoder
+
+    schema = schema_for(args.probe, "vae_encode")
+    with torch.device("meta"):
+        reference = Encoder(ch=128, ch_mult=[1, 2, 4, 4], num_res_blocks=2, in_channels=3,
+                            resolution=256, z_channels=16).eval()
+    expected_shapes = {"encoder." + key: tuple(value.shape) for key, value in reference.state_dict().items()}
+    if schema != expected_shapes:
+        raise AssertionError("The VAE encoder schema differs from Black Forest Labs")
+    with safe_open(args.vae_encoder_weights, framework="pt", device="cpu") as storage:
+        weights = {key.removeprefix("encoder."): storage.get_tensor(key) for key in schema}
+    reference.load_state_dict(weights, assign=True)
+    rgb = canny_edges(args.control_image, 96, 64, 50, 200)
+    mean = reference(torch.tensor(rgb[None]))[0, :16].numpy()
+    expected = pack(np.float32(0.3611) * (mean - np.float32(0.1159)))
+    actual = encode_control(args.probe, args.backend, args.expected_device, args.vae_encoder_weights, rgb, work)
+    delta = np.abs(expected - actual)
+    print(json.dumps({"stage": "vae_encode", "tensor_count": len(schema), "max_abs": float(delta.max()),
+                      "rmse": float(np.sqrt(np.mean(delta ** 2)))}, allow_nan=False), flush=True)
+    np.testing.assert_allclose(actual, expected, atol=6e-4, rtol=6e-4, equal_nan=False)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--probe", type=Path, required=True)
     parser.add_argument("--upstream", type=Path, required=True, help="directory containing the upstream flux package")
     parser.add_argument("--weights", type=Path)
     parser.add_argument("--vae-weights", type=Path, help="also validate the complete FLUX decoder")
-    parser.add_argument("--profile", choices=("fixture", "schnell"), default="fixture")
+    parser.add_argument("--vae-encoder-weights", type=Path, help="also validate the FLUX encoder for a Canny control image")
+    parser.add_argument("--control-image", type=Path)
+    parser.add_argument("--profile", choices=("fixture", "schnell", "canny_fixture", "canny_dev"), default="fixture")
     parser.add_argument("--storage", choices=(*STORAGE, SCALED_FP8), default="e4m3")
     parser.add_argument("--backend", choices=PLATFORMS, default="cpu")
     parser.add_argument("--expected-device")
     parser.add_argument("--fixture-lora", action="store_true", help="Compare split and stacked LoRAs to dense PyTorch patches.")
     args = parser.parse_args()
-    if (args.profile == "schnell") != (args.weights is not None):
-        parser.error("Supply prepared denoiser weights with --profile schnell")
+    if (not args.profile.endswith("fixture")) != (args.weights is not None):
+        parser.error("Supply prepared denoiser weights for schnell or canny_dev")
+    if (args.vae_encoder_weights is not None) != (args.control_image is not None):
+        parser.error("--vae-encoder-weights and --control-image must be used together")
     if args.fixture_lora and args.profile != "fixture":
         parser.error("--fixture-lora uses the fixture profile")
     args.probe = args.probe.resolve(strict=True)
@@ -206,6 +243,8 @@ def main():
         validate(args, work)
         if args.vae_weights is not None:
             validate_vae(args, work)
+        if args.vae_encoder_weights is not None:
+            validate_control(args, work)
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ fn pair(comptime name: []const u8, dims: anytype, outputs: i64) [2]l.Parameter {
     return .{ param(name ++ ".weight", dims), param(name ++ ".bias", .{outputs}) };
 }
 
-const schema = blk: {
+pub const schema = blk: {
     @setEvalBranchQuota(80_000);
     var spec: [4 + blocks * 16]l.Parameter = undefined;
     spec[0..4].* = [_]l.Parameter{

@@ -1,0 +1,16 @@
+load("@rules_zig//zig:defs.bzl", "zig_binary", "zig_library")
+
+zig_library(
+    name = "encoder",
+    main = "encoder.zig",
+    srcs = ["vision.zig"],
+    import_name = "zml_lib/qwen25_vl",
+    visibility = ["//visibility:public"],
+    deps = ["//libraries/qwen_decoder:model", "//runtime:runtime", "@zml//zml/core"],
+)
+
+zig_binary(
+    name = "qwen25_vl_encode",
+    main = "probe.zig",
+    deps = [":encoder", "//runtime:runtime"],
+)

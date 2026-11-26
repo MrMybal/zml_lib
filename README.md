@@ -28,15 +28,18 @@ Run local AI models in Zig with ZML. Each library contains its model graph, a Ba
 | Face restoration | [RetinaFace](libraries/retinaface/README.md), [ParseNet](libraries/parsenet/README.md), [CodeFormer](libraries/codeformer/README.md) |
 | Detection and segmentation | [YOLOv8](libraries/yolov8/README.md) for faces, hands and people, [SAM](libraries/sam/README.md), [SAM 2](libraries/sam2/README.md) with single-object tracking |
 | Depth and visual features | [DINOv2](libraries/dinov2/README.md), [Depth Anything V2 Large](libraries/depth_anything_v2/README.md), [Video Depth Anything Small](libraries/video_depth_anything/README.md) |
-| Text and image components | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [CLIP text](libraries/clip/README.md), [T5 and UMT5 encoders](libraries/t5/README.md), [TAEF1](libraries/taesd/README.md) |
-| Image generation | [FLUX.1 Schnell](libraries/flux1/README.md), [Stable Diffusion 1.5](libraries/stable_diffusion/README.md) |
+| Text and image components | [Qwen 2.5 0.5B](libraries/qwen2/README.md), [Qwen 3 1.7B](libraries/qwen3/README.md), [Qwen2.5-VL conditioning](libraries/qwen25_vl/README.md), [CLIP text](libraries/clip/README.md), [T5 and UMT5 encoders](libraries/t5/README.md), [TAEF1](libraries/taesd/README.md) |
+| Image generation and editing | [FLUX.1 Schnell and Canny Dev](libraries/flux1/README.md), [Stable Diffusion 1.5](libraries/stable_diffusion/README.md), [Qwen Image Edit 2511](libraries/qwen_image/README.md) |
 | Audio generation | [AudioLDM](libraries/audioldm/README.md), [CLAP text](libraries/laion_clap/README.md), [HiFi-GAN](libraries/hifigan/README.md) |
-| Speech recognition | [Whisper transcription with timestamped segments](libraries/whisper/README.md) |
+| Speech synthesis | [Qwen3-TTS 12 Hz](libraries/qwen3_tts/README.md) with CustomVoice, VoiceDesign and voice cloning |
+| Speech recognition | [Whisper transcription with timestamped segments](libraries/whisper/README.md), [Phonon 2 and 2.5](libraries/phonon/README.md) |
 | 3D reconstruction and motion | [TripoSR](libraries/triposr/README.md) image-to-mesh, [TRELLIS v1](libraries/trellis/README.md) DINOv2 conditioning, structure, SLAT and 3D decoders, [GVHMR video to body motion](libraries/gvhmr/README.md), [ViTPose-H](libraries/vitpose/README.md), [HMR2 appearance features](libraries/hmr2/README.md), [SMPL-X mesh and joints](libraries/smplx/README.md) |
 
 The inventory records checkpoints, dependencies and remaining ports. On Windows CPU, Llama matched PyTorch with the Dolphin 3 GGUF converted to FP16, and Qwen 3.5 matched Transformers token IDs with the official 0.8B checkpoint. [Model inventory](docs/model-adapters.json) · [Llama](libraries/llama/README.md) · [Qwen 3.5](libraries/qwen35/README.md)
 
 ## Integration
+
+The [local model catalog](docs/model-catalog.md) scans ComfyUI model folders and prepares supported Real-ESRGAN and Stable Diffusion 1.5 checkpoints, CLIP-L and T5-XXL encoders, and the FLUX.1 VAE decoder.
 
 Use [the C header](include/zml_lib.h) and [C++ example](examples/cpp/main.cpp) to load one model per `zml_lib.dll` session and process multiple images. The caller supplies the host buffers and serializes calls to a session. The runtime releases device outputs after copying them to the host. The [face-restoration ABI](libraries/codeformer/zml_faces.h) can hold RetinaFace, ParseNet, and CodeFormer in one session.
 

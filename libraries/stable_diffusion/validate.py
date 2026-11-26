@@ -3,36 +3,31 @@
 import argparse
 import gc
 import json
+import os
 from pathlib import Path
 
 import numpy as np
-import torch
-from safetensors import safe_open
 
 from generate import (add_options, check_options, decode, encode, image_pixels, initial_noise,
                       predict, scratch_directory, token_ids)
-from prepare import clip_config, prepare
+from prepare import clip_config, open_checkpoint, prepare
+
+
+def set_validation_caches(work):
+    os.environ["TORCHINDUCTOR_CACHE_DIR"] = str(work / "inductor")
+    os.environ["TRITON_CACHE_DIR"] = str(work / "triton")
 
 
 def take(path, prefix):
-    with safe_open(path, framework="pt") as source:
-        return {name: source.get_tensor(name).float() for name in source.keys() if name.startswith(prefix)}
+    with open_checkpoint(path) as (keys, get_tensor):
+        return {name: get_tensor(name).float() for name in keys if name.startswith(prefix)}
 
 
-def reference(args, ids, negative_ids, initial):
-    from diffusers import AutoencoderKL, DDIMScheduler, UNet2DConditionModel
-    from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-        convert_ldm_unet_checkpoint, convert_ldm_vae_checkpoint,
-    )
+def clip_reference(args, ids, negative_ids):
+    import torch
     from transformers import CLIPTextModel
 
     device = args.torch_device
-    torch.backends.cuda.matmul.allow_tf32 = False
-    torch.backends.cudnn.allow_tf32 = False
-
-    def numpy(value):
-        return value.detach().cpu().numpy()[0]
-
     source = take(args.checkpoint, "cond_stage_model.transformer.")
     weights = {key.removeprefix("cond_stage_model.transformer."): value for key, value in source.items()
                if not key.endswith(".position_ids")}
@@ -42,23 +37,64 @@ def reference(args, ids, negative_ids, initial):
     clip.to(device)
     positive = clip(torch.tensor([ids], device=device)).last_hidden_state
     negative = clip(torch.tensor([negative_ids], device=device)).last_hidden_state if negative_ids else None
-    del clip, source, weights
+    return positive, negative
+
+
+def load_unet(args, *, input_channels=4):
+    import torch
+    from diffusers import UNet2DConditionModel
+    from diffusers.pipelines.stable_diffusion.convert_from_ckpt import convert_ldm_unet_checkpoint
 
     with torch.device("meta"):
         unet = UNet2DConditionModel(
-            sample_size=64, in_channels=4, out_channels=4, layers_per_block=2, cross_attention_dim=768,
+            sample_size=64, in_channels=input_channels, out_channels=4, layers_per_block=2, cross_attention_dim=768,
             block_out_channels=(320, 640, 1280, 1280), attention_head_dim=8,
             down_block_types=("CrossAttnDownBlock2D", "CrossAttnDownBlock2D", "CrossAttnDownBlock2D", "DownBlock2D"),
             up_block_types=("UpBlock2D", "CrossAttnUpBlock2D", "CrossAttnUpBlock2D", "CrossAttnUpBlock2D"),
         ).eval()
     weights = convert_ldm_unet_checkpoint(take(args.checkpoint, "model.diffusion_model."), unet.config)
     unet.load_state_dict(weights, strict=True, assign=True)
-    unet.to(device)
-    del weights
+    return unet.to(args.torch_device)
+
+
+def ddim_reference(args):
+    from diffusers import DDIMScheduler
+
     scheduler = DDIMScheduler(beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear",
                               clip_sample=False, set_alpha_to_one=False, steps_offset=1)
-    scheduler.set_timesteps(args.steps, device=device)
-    latent = torch.from_numpy(initial[None]).to(device)
+    scheduler.set_timesteps(args.steps, device=args.torch_device)
+    return scheduler
+
+
+def load_vae(args):
+    import torch
+    from diffusers import AutoencoderKL
+    from diffusers.pipelines.stable_diffusion.convert_from_ckpt import convert_ldm_vae_checkpoint
+
+    with torch.device("meta"):
+        vae = AutoencoderKL(
+            block_out_channels=(128, 256, 512, 512), latent_channels=4, layers_per_block=2,
+            down_block_types=("DownEncoderBlock2D",) * 4, up_block_types=("UpDecoderBlock2D",) * 4,
+            scaling_factor=0.18215, sample_size=512,
+        ).eval()
+    weights = convert_ldm_vae_checkpoint(take(args.checkpoint, "first_stage_model."), vae.config)
+    vae.load_state_dict(weights, strict=True, assign=True)
+    return vae.to(args.torch_device)
+
+
+def numpy(value):
+    return value.detach().cpu().numpy()[0]
+
+
+def reference(args, ids, negative_ids, initial):
+    import torch
+
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    positive, negative = clip_reference(args, ids, negative_ids)
+    unet = load_unet(args)
+    scheduler = ddim_reference(args)
+    latent = torch.from_numpy(initial[None]).to(args.torch_device)
     first = None
     for t in scheduler.timesteps:
         prediction = unet(latent, t, positive).sample
@@ -69,17 +105,7 @@ def reference(args, ids, negative_ids, initial):
             prediction = unconditional + args.guidance * (prediction - unconditional)
         latent = scheduler.step(prediction, t, latent, eta=0).prev_sample
     del unet
-
-    with torch.device("meta"):
-        vae = AutoencoderKL(
-            block_out_channels=(128, 256, 512, 512), latent_channels=4, layers_per_block=2,
-            down_block_types=("DownEncoderBlock2D",) * 4, up_block_types=("UpDecoderBlock2D",) * 4,
-            scaling_factor=0.18215, sample_size=512,
-        ).eval()
-    weights = convert_ldm_vae_checkpoint(take(args.checkpoint, "first_stage_model."), vae.config)
-    vae.load_state_dict(weights, strict=True, assign=True)
-    vae.to(device)
-    del weights
+    vae = load_vae(args)
     rgb = vae.decode(latent / vae.config.scaling_factor).sample
     return {"positive": numpy(positive), "negative": numpy(negative) if negative is not None else None,
             "first_timestep": int(scheduler.timesteps[0]), "prediction": first,
@@ -93,6 +119,7 @@ def compare(actual, expected, *, max_limit, mean_limit):
 
 
 def validate(args, work):
+    import torch
     from transformers import CLIPTokenizer
 
     tokenizer = CLIPTokenizer.from_pretrained(args.clip_tokenizer, local_files_only=True)
@@ -134,6 +161,7 @@ def main():
     args = parser.parse_args()
     args.checkpoint = args.checkpoint.resolve(strict=True)
     with scratch_directory() as work:
+        set_validation_caches(work)
         if args.weights is None:
             args.weights = work / "weights"
             prepare(args.checkpoint, args.bin_dir, args.weights)

@@ -1,23 +1,51 @@
-"""Extract the three FP32 ZML weight files from a local SD 1.5 checkpoint."""
+"""Extract FP32 ZML weights from a local SD 1.5 or SD 1.5 Inpainting checkpoint."""
 
 import argparse
+from contextlib import contextmanager
 import json
 from math import prod
 from pathlib import Path
 import struct
 import subprocess
 from tempfile import TemporaryDirectory
+from zipfile import is_zipfile
 
 
-MANIFEST = {"profile": "sd15", "storage": "f32"}
+PROFILES = ("sd15", "sd15-inpaint")
+
+
+def manifest(profile):
+    return {"profile": profile, "storage": "f32"}
+
+
+@contextmanager
+def open_checkpoint(path):
+    if path.suffix.lower() == ".safetensors":
+        from safetensors import safe_open
+
+        with safe_open(path, framework="pt") as source:
+            yield source.keys(), source.get_tensor
+    elif path.suffix.lower() == ".ckpt":
+        import torch
+
+        weights = torch.load(path, map_location="cpu", weights_only=True, mmap=is_zipfile(path))
+        if not isinstance(weights, dict):
+            raise ValueError("Expected a checkpoint state dictionary")
+        state = weights.get("state_dict", weights)
+        if not isinstance(state, dict):
+            raise ValueError("Expected a state_dict of checkpoint tensors")
+        yield state.keys(), state.__getitem__
+    else:
+        raise ValueError("Expected a local .safetensors or .ckpt checkpoint")
 
 
 def probe_path(bin_dir, library, name):
     return (bin_dir / "libraries" / library / (name + ".exe")).resolve(strict=True)
 
 
-def native_schema(probe, role):
-    rows = subprocess.check_output([probe, role, "schema"], text=True, encoding="utf-8").splitlines()
+def native_schema(probe, *profile):
+    role = " ".join(profile) or probe.stem
+    rows = subprocess.check_output([probe, *profile, "schema"], text=True, encoding="utf-8").splitlines()
     schema = {}
     for line in rows:
         name, *shape = line.split("\t")
@@ -40,7 +68,8 @@ def clip_config():
 def extract(checkpoint, prefix, schema, output, include=lambda name: True):
     import torch
 
-    actual = {key.removeprefix(prefix) for key in checkpoint.keys()
+    keys, get_tensor = checkpoint
+    actual = {key.removeprefix(prefix) for key in keys
               if key.startswith(prefix) and include(key.removeprefix(prefix))}
     if actual != schema.keys():
         raise ValueError(f"Unexpected keys for {output.name}: missing={sorted(schema.keys() - actual)}, "
@@ -48,9 +77,10 @@ def extract(checkpoint, prefix, schema, output, include=lambda name: True):
     header = {"__metadata__": {"format": "pt", "storage": "f32"}}
     offset = 0
     for name, shape in schema.items():
-        part = checkpoint.get_slice(prefix + name)
-        if tuple(part.get_shape()) != shape or part.get_dtype() not in ("F32", "F16", "BF16"):
-            raise ValueError(f"Invalid checkpoint tensor {prefix + name}: {part.get_shape()}, {part.get_dtype()}")
+        part = get_tensor(prefix + name)
+        if (not isinstance(part, torch.Tensor) or tuple(part.shape) != shape
+                or part.dtype not in (torch.float32, torch.float16, torch.bfloat16)):
+            raise ValueError(f"Invalid shape or precision for checkpoint tensor {prefix + name}; expected {shape}")
         end = offset + prod(shape) * 4
         header[name] = {"dtype": "F32", "shape": shape, "data_offsets": [offset, end]}
         offset = end
@@ -60,17 +90,19 @@ def extract(checkpoint, prefix, schema, output, include=lambda name: True):
         stream.write(struct.pack("<Q", len(encoded)))
         stream.write(encoded)
         for name in schema:
-            value = checkpoint.get_tensor(prefix + name).to(torch.float32).contiguous()
+            value = get_tensor(prefix + name).to(torch.float32).contiguous()
             if not torch.isfinite(value).all().item():
                 raise ValueError(f"Nonfinite checkpoint tensor {prefix + name}")
             value.numpy().tofile(stream)
 
 
-def prepare(checkpoint, bin_dir, output):
-    from safetensors import safe_open
+def prepare(checkpoint, bin_dir, output, profile="sd15"):
     import torch
     from transformers import CLIPTextModel
 
+    if profile not in PROFILES:
+        raise ValueError(f"Unknown profile: {profile}")
+    inpaint = profile == "sd15-inpaint"
     probe = probe_path(bin_dir, "stable_diffusion", "sd15_probe")
     with torch.device("meta"):
         clip = CLIPTextModel(clip_config())
@@ -80,13 +112,17 @@ def prepare(checkpoint, bin_dir, output):
     with TemporaryDirectory(prefix="sd15-prepare-", dir=output.parent) as temp:
         staged = Path(temp) / "bundle"
         staged.mkdir()
-        with safe_open(checkpoint, framework="pt") as source:
-            extract(source, "model.diffusion_model.", native_schema(probe, "unet"), staged / "unet.safetensors")
+        with open_checkpoint(checkpoint) as source:
+            unet = native_schema(probe, "inpaint_unet" if inpaint else "unet")
+            extract(source, "model.diffusion_model.", unet, staged / "unet.safetensors")
             extract(source, "first_stage_model.", native_schema(probe, "vae"), staged / "vae.safetensors",
                     lambda name: name.startswith(("decoder.", "post_quant_conv.")))
+            if inpaint:
+                extract(source, "first_stage_model.", native_schema(probe, "vae_encode"), staged / "encoder.safetensors",
+                        lambda name: name.startswith(("encoder.", "quant_conv.")))
             extract(source, "cond_stage_model.transformer.", clip_schema, staged / "clip.safetensors",
                     lambda name: name != "text_model.embeddings.position_ids")
-        (staged / "sd15.json").write_text(json.dumps(MANIFEST) + "\n", encoding="utf-8")
+        (staged / "sd15.json").write_text(json.dumps(manifest(profile)) + "\n", encoding="utf-8")
         staged.rename(output)
 
 
@@ -95,8 +131,9 @@ def main():
     parser.add_argument("checkpoint", type=Path)
     parser.add_argument("--bin-dir", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--profile", choices=PROFILES, default="sd15")
     args = parser.parse_args()
-    prepare(args.checkpoint.resolve(strict=True), args.bin_dir, args.output.resolve())
+    prepare(args.checkpoint.resolve(strict=True), args.bin_dir, args.output.resolve(), args.profile)
 
 
 if __name__ == "__main__":
