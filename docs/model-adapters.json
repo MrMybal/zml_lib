@@ -56,20 +56,20 @@
     "validation": "Les résultats des portages exécutés figurent dans avancement. L'inventaire des autres modèles repose sur les fichiers et les sources."
   },
   "totaux": {
-    "adaptateurs": 75,
+    "adaptateurs": 79,
     "adaptateurs_par_domaine": {
-      "Image et vision": 19,
+      "Image et vision": 22,
       "Génération d’images et de vidéos": 11,
       "Texte et multimodal": 10,
       "Audio, voix et parole": 16,
-      "3D, mouvement et splats": 19
+      "3D, mouvement et splats": 20
     },
     "adaptateurs_par_statut": {
-      "porte": 18,
+      "porte": 24,
       "valide_windows_cpu": 11,
-      "port_existant_a_etendre": 3,
-      "a_porter": 36,
-      "architecture_a_confirmer": 3,
+      "port_existant_a_etendre": 5,
+      "a_porter": 33,
+      "architecture_a_confirmer": 2,
       "source_implemente": 3,
       "integration_a_specifier": 1
     },
@@ -169,6 +169,10 @@
           "wonder3d",
           "stablenormal",
           "trellis",
+          "depth_anything_v3",
+          "moge2",
+          "naf",
+          "trellis2_vae",
           "trellis2",
           "hi3dgen",
           "triposr",
@@ -186,7 +190,6 @@
         "bibliotheques": [
           "transparent_background",
           "spar3d",
-          "localmesh_multivue",
           "darkidol_voice",
           "phonon",
           "audio_flamingo"
@@ -540,17 +543,18 @@
       "id": "birefnet",
       "domaine": "Image et vision",
       "dossier": "libraries/birefnet",
-      "statut": "a_porter",
+      "statut": "port_existant_a_etendre",
       "modeles": [
         "BiRefNet HR",
         "BiRefNet utilisé par 4DAnyone"
       ],
       "clients": [
         "CyTools_MeshStudio",
-        "CyTools_VideoToGaussian"
+        "CyTools_VideoToGaussian",
+        "LocalMesh Engine"
       ],
-      "moteur_actuel": "Transformers, PyTorch",
-      "travail": "Porter backbone et décodeur de masque haute résolution, avec profils et seuils validés par les deux applications.",
+      "moteur_actuel": "ZML pour BiRefNet_HR de LocalMesh, PyTorch pour les profils clients non vérifiés",
+      "travail": "Détourage BiRefNet_HR validé sur Colab L4 avec les poids officiels à 1024 × 1024. Vérifier les profils et seuils de 4DAnyone et de MeshStudio.",
       "fichiers_locaux": 0,
       "catalogues_clients": [
         "CyTools_MeshStudio/app/models/catalog.json",
@@ -563,15 +567,15 @@
       "id": "dinov3",
       "domaine": "Image et vision",
       "dossier": "libraries/dinov3",
-      "statut": "a_porter",
+      "statut": "porte",
       "modeles": [
         "DINOv3 ViT-L/16"
       ],
       "clients": [
         "CyTools_MeshStudio"
       ],
-      "moteur_actuel": "Transformers ou PyTorch, TRELLIS.2",
-      "travail": "Porter l’encodeur DINOv3 avec sa configuration de position et ses tokens spéciaux.",
+      "moteur_actuel": "ZML, CUDA validé sur Colab L4",
+      "travail": "Encodeur ViT-L/16 avec les 415 tenseurs officiels, validé face à Transformers en FP32 sur la L4.",
       "reference": "https://github.com/facebookresearch/dinov3",
       "fichiers_locaux": 0,
       "catalogues_clients": [
@@ -1774,18 +1778,20 @@
       "id": "trellis2",
       "domaine": "3D, mouvement et splats",
       "dossier": "libraries/trellis2",
-      "statut": "a_porter",
+      "statut": "port_existant_a_etendre",
       "modeles": [
         "TRELLIS.2-4B FP8"
       ],
       "clients": [
-        "CyTools_MeshStudio"
+        "CyTools_MeshStudio",
+        "LocalMesh Engine"
       ],
-      "moteur_actuel": "PyTorch, TRELLIS.2",
-      "travail": "Porter le générateur et ses décodeurs, avec stockage FP8 et reconstruction surface/matériaux. Réutiliser la couche sparse commune après vérification.",
+      "moteur_actuel": "ZML pour les flux et VAE sparse de LocalMesh",
+      "travail": "Flux FP8 de LocalMesh et BF16 de Pixal3D vérifiés sur Colab L4. Les quatre VAE FP8 sont validés en FP32. Vérifier les profils propres à MeshStudio.",
       "dependances": [
         "dinov3",
-        "birefnet"
+        "birefnet",
+        "trellis2_vae"
       ],
       "reference": "https://github.com/microsoft/TRELLIS.2",
       "fichiers_locaux": 0,
@@ -1821,8 +1827,8 @@
     {
       "id": "localmesh_multivue",
       "domaine": "3D, mouvement et splats",
-      "dossier": "libraries/localmesh_multivue",
-      "statut": "architecture_a_confirmer",
+      "dossier": null,
+      "statut": "porte",
       "modeles": [
         "LocalMesh multi-view camera stack"
       ],
@@ -1830,12 +1836,23 @@
         "CyTools_MeshStudio"
       ],
       "moteur_actuel": "Modules dynamiques Hugging Face, PyTorch",
-      "travail": "Identifier les poids et graphes réellement nécessaires dans le bundle local. Le cache de modules est un artefact de distribution.",
+      "travail": "L’intégration, les tests de la chaîne LocalMesh et leurs résultats sont publiés dans le fork du moteur.",
       "fichiers_locaux": 0,
       "catalogues_clients": [
         "CyTools_MeshStudio/app/models/catalog.json"
       ],
-      "fichiers_de_modele_locaux": 0
+      "fichiers_de_modele_locaux": 0,
+      "dependances": [
+        "birefnet",
+        "dinov3",
+        "depth_anything_v3",
+        "moge2",
+        "naf",
+        "trellis2",
+        "trellis2_vae",
+        "trellis"
+      ],
+      "reference": "https://github.com/MrMybal/localmesh-engine_zml/blob/main/docs/ZML.md"
     },
     {
       "id": "spar3d",
@@ -2097,6 +2114,83 @@
         "CyTools_VideoToGaussian/app/4danyone-catalog.json",
         "CyTools_VideoToGaussian/app/sharp-catalog.json"
       ],
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "depth_anything_v3",
+      "domaine": "Image et vision",
+      "dossier": "libraries/depth_anything_v3",
+      "statut": "porte",
+      "modeles": [
+        "DA3-BASE, quatre vues avec référence fixée"
+      ],
+      "clients": [
+        "LocalMesh Engine"
+      ],
+      "moteur_actuel": "ZML",
+      "travail": "Profondeur, confiance, rayons et tête de pose validés en FP32 sur Colab L4 avec les poids LocalMesh.",
+      "reference": "https://github.com/ByteDance-Seed/Depth-Anything-3",
+      "fichiers_locaux": 0,
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "moge2",
+      "domaine": "Image et vision",
+      "dossier": "libraries/moge2",
+      "statut": "porte",
+      "modeles": [
+        "MoGe-2 ViT-L",
+        "MoGe-2 ViT-L Normal"
+      ],
+      "clients": [
+        "LocalMesh Engine"
+      ],
+      "moteur_actuel": "ZML pour le réseau, solveur de géométrie sur CPU",
+      "travail": "Focale et relief du fork raccordés. Deux profils vérifiés en FP32 sur Colab L4.",
+      "dependances": [
+        "dinov2"
+      ],
+      "reference": "https://github.com/microsoft/MoGe",
+      "fichiers_locaux": 0,
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "naf",
+      "domaine": "Image et vision",
+      "dossier": "libraries/naf",
+      "statut": "porte",
+      "modeles": [
+        "NAF champ.safetensors"
+      ],
+      "clients": [
+        "LocalMesh Engine"
+      ],
+      "moteur_actuel": "ZML, CUDA validé sur Colab L4",
+      "travail": "Encodeur et attention locale validés en FP32 avec les poids distribués par LocalMesh.",
+      "dependances": [
+        "dinov3"
+      ],
+      "reference": "https://github.com/valeoai/NAF",
+      "fichiers_locaux": 0,
+      "fichiers_de_modele_locaux": 0
+    },
+    {
+      "id": "trellis2_vae",
+      "domaine": "3D, mouvement et splats",
+      "dossier": "libraries/trellis2_vae",
+      "statut": "porte",
+      "modeles": [
+        "TRELLIS.2 VAE de forme FP8",
+        "TRELLIS.2 VAE PBR FP8",
+        "Pixal3D décodeurs de forme et PBR FP16"
+      ],
+      "clients": [
+        "LocalMesh Engine"
+      ],
+      "moteur_actuel": "ZML pour les graphes sparse",
+      "travail": "Les quatre profils FP8 et les deux décodeurs FP16 passent face à la référence PyTorch FP32 sur Colab L4.",
+      "reference": "https://github.com/microsoft/TRELLIS.2",
+      "fichiers_locaux": 0,
       "fichiers_de_modele_locaux": 0
     }
   ],

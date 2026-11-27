@@ -1,4 +1,5 @@
 const std = @import("std");
+const zml = @import("zml/core");
 const l = @import("layers.zig");
 const Tensor = l.Tensor;
 
@@ -87,6 +88,43 @@ pub fn scores(q: Tensor, k: Tensor) Tensor {
 
 pub fn attention(q: Tensor, k: Tensor, v: Tensor, heads: i64) Tensor {
     return attend(scores(splitHeads(q, heads), splitHeads(k, heads)), splitHeads(v, heads));
+}
+
+const QueryTiles = struct {
+    q: Tensor,
+    k: Tensor,
+    v: Tensor,
+
+    const tile = 256;
+    pub const State = struct { start: Tensor, out: Tensor };
+
+    pub fn cond(self: QueryTiles, state: State) Tensor {
+        return state.start.cmp(.LT, .scalar(self.q.dim(2), .i32));
+    }
+
+    pub fn body(self: QueryTiles, state: State) State {
+        const zero: Tensor = .scalar(0, .i32);
+        const query = self.q.slice(2, .dyn(state.start, tile));
+        return .{
+            .start = state.start.addConstant(@as(i32, tile)),
+            .out = state.out.dynamicUpdateSlice(.{ zero, state.start, zero }, attend(scores(query, self.k), self.v)),
+        };
+    }
+};
+
+pub fn attendHeads(q: Tensor, k: Tensor, v: Tensor) Tensor {
+    const rows = q.dim(2);
+    if (rows <= 4096) return attend(scores(q, k), v);
+    // A query tile retains the full key sequence and softmax denominator.
+    const padded_rows = @divTrunc(rows + QueryTiles.tile - 1, QueryTiles.tile) * QueryTiles.tile;
+    const padded_q = if (padded_rows == rows) q else Tensor.concatenate(&.{
+        q, Tensor.zeroes(q.shape().setDim(2, padded_rows - rows)),
+    }, 2);
+    const state = zml.ops.@"while"(QueryTiles, .{ .q = padded_q, .k = k, .v = v }, .{
+        .start = .scalar(0, .i32),
+        .out = .zeroes(.init(.{ q.dim(0), padded_rows, v.dim(1) * v.dim(3) }, q.dtype())),
+    });
+    return state.out.slice(1, .{ .end = rows });
 }
 
 pub fn deconv2x(w: l.Weights, name: []const u8, x: Tensor) Tensor {

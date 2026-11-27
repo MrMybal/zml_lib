@@ -37,6 +37,10 @@ Exécutez des modèles d’IA en local en Zig avec ZML. Chaque bibliothèque fou
 
 L’inventaire recense les checkpoints, les dépendances et les portages restants. Sur CPU Windows, Llama reproduit PyTorch avec le GGUF Dolphin 3 converti en FP16, et Qwen 3.5 reproduit les tokens de Transformers avec le checkpoint officiel 0.8B. [Inventaire](docs/model-adapters.json) · [Llama](libraries/llama/README.md) · [Qwen 3.5](libraries/qwen35/README.md)
 
+**Conditionnement d’image et reconstruction 3D**
+
+[BiRefNet-HR](libraries/birefnet/README.md), [DINOv3](libraries/dinov3/README.md), [Depth Anything 3](libraries/depth_anything_v3/README.md), [MoGe-2](libraries/moge2/README.md), [NAF](libraries/naf/README.md), [TRELLIS.2](libraries/trellis2/README.md), [TRELLIS.2 VAE](libraries/trellis2_vae/README.md).
+
 ## Intégration
 
 Le [catalogue local](docs/model-catalog.md) inventorie les dossiers de modèles ComfyUI et prépare les checkpoints Real-ESRGAN et Stable Diffusion 1.5, les encodeurs CLIP-L et T5-XXL ainsi que le décodeur VAE de FLUX.1.

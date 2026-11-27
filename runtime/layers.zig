@@ -45,7 +45,12 @@ pub fn conv3x3Stride2(w: Weights, name_: []const u8, x: Tensor, has_bias: bool) 
 }
 
 pub fn convGroups(w: Weights, name_: []const u8, x: Tensor, stride: i64, padding: [4]i64, has_bias: bool, groups: i64) Tensor {
-    const output = x.conv2d(w.get(name_, ".weight"), .{
+    const output = conv2dParameters(x, w.get(name_, ".weight"), stride, padding, groups);
+    return if (has_bias) biasAdd(output, w.get(name_, ".bias"), 1) else output;
+}
+
+pub fn conv2dParameters(x: Tensor, kernel: Tensor, stride: i64, padding: [4]i64, groups: i64) Tensor {
+    const output = x.conv2d(kernel, .{
         .window_strides = &.{ stride, stride },
         .padding = &padding,
         .feature_group_count = groups,
@@ -53,7 +58,7 @@ pub fn convGroups(w: Weights, name_: []const u8, x: Tensor, stride: i64, padding
     const ctx = zml.Compiler.current().mlir_ctx;
     const high = stablehlo.precisionAttr(ctx, .HIGHEST);
     output.value().owner().setAttributeByName("precision_config", .array(ctx, &.{ high, high }));
-    return if (has_bias) biasAdd(output, w.get(name_, ".bias"), 1) else output;
+    return output;
 }
 
 pub fn batchNorm(w: Weights, name_: []const u8, x: Tensor) Tensor {
