@@ -10,7 +10,7 @@ pub const spatial = @import("spatial.zig");
 pub const TensorModel = @import("tensor_model.zig").TensorModel;
 pub const transformer = @import("transformer.zig");
 pub const pose_vit = @import("pose_vit.zig");
-pub const Backend = enum(u32) { auto = 0, cpu = 1, cuda = 2, rocm = 3, vulkan = 4, metal = 5 };
+pub const Backend = enum(u32) { auto = 0, cpu = 1, cuda = 2, rocm = 3, vulkan = 4 };
 var platform_init_lock: std.Io.Mutex = .init;
 
 pub const Session = struct {
@@ -31,7 +31,6 @@ pub const Session = struct {
             .cuda => try zml.Platform.init(allocator, io, .cuda, options),
             .rocm => try zml.Platform.init(allocator, io, .rocm, options),
             .vulkan => try zml.Platform.init(allocator, io, .vulkan, options),
-            .metal => try zml.Platform.init(allocator, io, .metal, options),
         };
         return .{ .allocator = allocator, .io = io, .platform = platform };
     }

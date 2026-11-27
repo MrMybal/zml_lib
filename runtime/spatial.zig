@@ -19,15 +19,10 @@ fn sample(input: Tensor, comptime axis: u3, indices: Tensor, weight: Tensor) Ten
     return aligned.mul(weight.broadcast(aligned.shape(), &.{axis}));
 }
 
-fn resizeLinear(input: Tensor, comptime axis: u3, size: i64, comptime align_corners: bool) Tensor {
+fn resizeLinear(input: Tensor, comptime axis: u3, size: i64) Tensor {
     if (input.dim(axis) == size) return input;
-    const extent: f32 = @floatFromInt(input.dim(axis));
-    const target: f32 = @floatFromInt(size);
-    const range = Tensor.iota(.init(.{size}, .i32), 0).convert(.f32);
-    const coordinate = if (align_corners)
-        range.scale(if (size == 1) 0 else (extent - 1) / (target - 1))
-    else
-        range.addConstant(@as(f32, 0.5)).scale(extent / target).subConstant(@as(f32, 0.5));
+    const scale: f32 = if (size == 1) 0 else @as(f32, @floatFromInt(input.dim(axis) - 1)) / @as(f32, @floatFromInt(size - 1));
+    const coordinate = Tensor.iota(.init(.{size}, .i32), 0).convert(.f32).scale(scale);
     const base = coordinate.floor();
     const fraction = coordinate.sub(base);
     const index = base.convert(.i32);
@@ -36,11 +31,7 @@ fn resizeLinear(input: Tensor, comptime axis: u3, size: i64, comptime align_corn
 }
 
 pub fn bilinearAlignCorners(input: Tensor, height: i64, width: i64) Tensor {
-    return resizeLinear(resizeLinear(input, 2, height, true), 3, width, true);
-}
-
-pub fn bilinearHalfPixel(input: Tensor, height: i64, width: i64) Tensor {
-    return resizeLinear(resizeLinear(input, 3, width, false), 2, height, false);
+    return resizeLinear(resizeLinear(input, 2, height), 3, width);
 }
 
 const cubic_coefficient: f32 = -0.75;
@@ -73,7 +64,7 @@ pub fn bicubicHalfPixel(input: Tensor, height: i64, width: i64, offset: f64) Ten
     return resizeCubic(resizeCubic(input, 3, width, offset), 2, height, offset);
 }
 
-fn antialiasLast(input: Tensor, size: i64, comptime cubic: bool) Tensor {
+fn antialiasLast(input: Tensor, size: i64) Tensor {
     const source = input.dim(3);
     if (source == size) return input;
     const scale = @as(f32, @floatFromInt(source)) / @as(f32, @floatFromInt(size));
@@ -82,21 +73,14 @@ fn antialiasLast(input: Tensor, size: i64, comptime cubic: bool) Tensor {
     const target = Tensor.iota(shape.withDtype(.i32), 0).convert(.f32).addConstant(@as(f32, 0.5)).scale(scale);
     const src = Tensor.iota(shape.withDtype(.i32), 1).convert(.f32).addConstant(@as(f32, 0.5));
     const x = src.sub(target).abs().scale(1 / @max(1, scale));
+    const inner = x.scale(@as(f32, 1.5)).subConstant(@as(f32, 2.5)).mul(x).mul(x).addConstant(@as(f32, 1));
+    const outer = x.scale(@as(f32, -0.5)).addConstant(@as(f32, 2.5)).mul(x).subConstant(@as(f32, 4)).mul(x).addConstant(@as(f32, 2));
     const zero = Tensor.scalar(@as(f32, 0), .f32);
-    const weight = if (cubic) weight: {
-        const inner = x.scale(@as(f32, 1.5)).subConstant(@as(f32, 2.5)).mul(x).mul(x).addConstant(@as(f32, 1));
-        const outer = x.scale(@as(f32, -0.5)).addConstant(@as(f32, 2.5)).mul(x).subConstant(@as(f32, 4)).mul(x).addConstant(@as(f32, 2));
-        break :weight Tensor.select(x.cmp(.LT, .scalar(@as(f32, 1), .f32)), inner, Tensor.select(x.cmp(.LT, .scalar(@as(f32, 2), .f32)), outer, zero.broad(shape)));
-    } else x.scale(@as(f32, -1)).addConstant(@as(f32, 1)).maximum(zero);
+    const weight = Tensor.select(x.cmp(.LT, .scalar(@as(f32, 1), .f32)), inner, Tensor.select(x.cmp(.LT, .scalar(@as(f32, 2), .f32)), outer, zero.broad(shape)));
     return input.dotGeneral(weight.div(weight.sum(1).broad(shape)), &.{.{ 3, 1 }}, &.{});
 }
 
 pub fn bicubicAntialias(input: Tensor, height: i64, width: i64) Tensor {
-    const horizontal = antialiasLast(input, width, true);
-    return antialiasLast(horizontal.transpose(.{ 0, 1, 3, 2 }), height, true).transpose(.{ 0, 1, 3, 2 });
-}
-
-pub fn bilinearAntialias(input: Tensor, height: i64, width: i64) Tensor {
-    const horizontal = antialiasLast(input, width, false);
-    return antialiasLast(horizontal.transpose(.{ 0, 1, 3, 2 }), height, false).transpose(.{ 0, 1, 3, 2 });
+    const horizontal = antialiasLast(input, width);
+    return antialiasLast(horizontal.transpose(.{ 0, 1, 3, 2 }), height).transpose(.{ 0, 1, 3, 2 });
 }

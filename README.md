@@ -37,8 +37,6 @@ Run local AI models in Zig with ZML. Each library contains its model graph, a Ba
 
 The inventory records checkpoints, dependencies and remaining ports. On Windows CPU, Llama matched PyTorch with the Dolphin 3 GGUF converted to FP16, and Qwen 3.5 matched Transformers token IDs with the official 0.8B checkpoint. [Model inventory](docs/model-adapters.json) · [Llama](libraries/llama/README.md) · [Qwen 3.5](libraries/qwen35/README.md)
 
-The [LocalMesh port](libraries/localmesh_multivue/README.md) tracks the ZML inference stages used by the LocalMesh Engine fork.
-
 ## Integration
 
 The [local model catalog](docs/model-catalog.md) scans ComfyUI model folders and prepares supported Real-ESRGAN and Stable Diffusion 1.5 checkpoints, CLIP-L and T5-XXL encoders, and the FLUX.1 VAE decoder.

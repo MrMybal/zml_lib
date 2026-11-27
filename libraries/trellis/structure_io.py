@@ -45,7 +45,7 @@ def read_checkpoint(path, schema):
     return {name: np.ascontiguousarray(tensor, dtype=np.float32) for name, tensor in weights.items()}
 
 
-def run(probe, profile, backend, weights, latent, work, stem, repeats=1, *, expected_device=None, expected_pjrt=None):
+def run(probe, profile, backend, weights, latent, work, stem, repeats=1, *, expected_device=None):
     src, dst = work / f"{stem}.input.f32", work / f"{stem}.output.f32"
     if latent.ndim != 5 or latent.shape[:2] != (1, 8) or any(not 1 <= dim <= 16 for dim in latent.shape[2:]):
         raise ValueError("Expected latent shape [1,8,D,H,W] with edges 1–16")
@@ -60,7 +60,7 @@ def run(probe, profile, backend, weights, latent, work, stem, repeats=1, *, expe
                             stdout=sys.stderr, stderr=subprocess.PIPE, text=True)
     sys.stderr.write(result.stderr)
     result.check_returncode()
-    verify_placement(result.stderr, backend, repeats, expected_device, expected_pjrt=expected_pjrt)
+    verify_placement(result.stderr, backend, repeats, expected_device)
     return np.fromfile(dst, dtype="<f4").reshape(1, 1, *(4 * dim for dim in dims))
 
 
